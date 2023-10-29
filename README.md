@@ -1,25 +1,46 @@
-# Commit Conventions
+## Commit Conventions
 
-Below are the commit conventions that should be followed when contributing to this project:
+### Feature:
 
-- **Feature**:
-    - Format: "feat   [optional][<file|folder>] : <description> [optional]<info>"
-    - Description: When a new functionality is added.
+- **Format:**
+  ```
+  feat [optional][<file|folder>] : <description>
+  [optional]<list_info>
+  ```
+- **Description:** When a new functionality is added.
 
-- **Work-in-Progress**:
-    - Format: "work   [optional][<file|folder>] : <description> [optional]<info>"
-    - Description: When a commit related to a work-in-progress feature is added.
+### Work-in-Progress:
 
-- **Bug Fix**:
-    - Format: "fix    [optional][<file|folder>] : <description> [optional]<info>"
-    - Description: When a fix to an unintended issue is added.
+- **Format:**
+  ```
+  work [optional][<file|folder>] : <description>
+  [optional]<list_info>
+  ```
+- **Description:** When a commit related to a work-in-progress feature is added.
 
-- **Documentation**:
-    - Format: "doc    [optional][<file|folder>] : <description> [optional]<info>"
-    - Description: When a documentation-related commit is added.
+### Bug Fix:
 
-- **Revert**:
-    - Format: "revert [optional][<file|folder>] : <description> [optional]<info>"
-    - Description: When a revert is made.
+- **Format:**
+  ```
+  fix [optional][<file|folder>] : <description>
+  [optional]<list_info>
+  ```
+- **Description:** When a fix to an unintended issue is added.
 
+### Documentation:
 
+- **Format:**
+  ```
+  doc [optional][<file|folder>] : <description>
+  [optional]<list_info>
+  ```
+- **Description:** When a documentation-related commit is added.
+
+### Revert:
+
+- **Format:**
+  ```
+  revert [optional][<commit>] : <description>
+  [optional]<list_info>
+  ```
+- **Description:** When a revert is made.
