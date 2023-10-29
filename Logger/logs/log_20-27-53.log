@@ -1,0 +1,18 @@
+20:27:54 - Thread-1 (perform_work) Calling function: divide (10, 2)
+20:27:54 - Thread-3 (perform_work) Calling function: divide (10, 2)
+20:27:54 - Thread-1 (perform_work) Result of divide: 5.0
+20:27:54 - Thread-2 (perform_work) Calling function: divide (10, 2)
+20:27:54 - Thread-3 (perform_work) Result of divide: 5.0
+20:27:54 - Thread-2 (perform_work) Result of divide: 5.0
+20:27:55 - Thread-1 (perform_work) Calling function: divide (10, 0)
+20:27:55 - Thread-2 (perform_work) Calling function: divide (10, 0)
+20:27:55 - Thread-1 (perform_work) Function divide encountered an exception: division by zero
+20:27:55 - Thread-2 (perform_work) Function divide encountered an exception: division by zero
+20:27:55 - Thread-3 (perform_work) Calling function: divide (10, 0)
+20:27:55 - Thread-3 (perform_work) Function divide encountered an exception: division by zero
+20:27:56 - Thread-2 (perform_work) Calling function: add (5, 7)
+20:27:56 - Thread-3 (perform_work) Calling function: add (5, 7)
+20:27:56 - Thread-2 (perform_work) Result of add: 12
+20:27:56 - Thread-1 (perform_work) Calling function: add (5, 7)
+20:27:56 - Thread-3 (perform_work) Result of add: 12
+20:27:56 - Thread-1 (perform_work) Result of add: 12
