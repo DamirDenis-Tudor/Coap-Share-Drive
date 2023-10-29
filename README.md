@@ -1,1 +1,26 @@
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-718a45dd9cf7e7f842a935f5ebbe5719a5e09af4491e668f4dbf3b35d5cca122.svg)](https://classroom.github.com/online_ide?assignment_repo_id=12600044&assignment_repo_type=AssignmentRepo)
+# Commit Conventions
+
+Below are the commit conventions that should be followed when contributing to this project:
+
+- **Feature**:
+    - Format: "feat   [optional][<file|folder>] <description> [optional]<body>"
+    - Description: When a new functionality is added.
+
+- **Work-in-Progress**:
+    - Format: "work   [optional][<file|folder>] : <description> [optional]<body>"
+    - Description: When a commit related to a work-in-progress feature is added.
+
+- **Bug Fix**:
+    - Format: "fix    [optional][<file|folder>] : <description> [optional]<body>"
+    - Description: When a fix to an unintended issue is added.
+
+- **Documentation**:
+    - Format: "doc    [optional][<file|folder>] : <description> [optional]<body>"
+    - Description: When a documentation-related commit is added.
+
+- **Revert**:
+    - Format: "revert [optional][<file|folder>] : <description> [optional]<body>"
+    - Description: When a revert is made.
+
+Please adhere to these conventions for clear and organized commit messages.
+
