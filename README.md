@@ -1,10 +1,11 @@
 # 1. Sequence digram
 
-![sequence_diagram](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/bec72bbe-fbe2-45de-b594-a8e483776068)
+![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/95768d98-59f4-4a45-a3ad-1f644f7d76a8)
+
 
 # 2. CoAP Message Format
 
-![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/5225a256-bf10-4d34-9b6e-c00e237a25d9)
+![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/61aab857-2db1-4900-b847-26d4b9b00c93)
 
 ### Packet Types
 - **Confirmable (CON - 00)**: Used for request messages expecting acknowledgments.
