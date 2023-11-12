@@ -1,6 +1,6 @@
-<mxfile host="Electron" modified="2023-11-09T21:49:22.446Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.0.3 Chrome/114.0.5735.289 Electron/25.8.4 Safari/537.36" etag="Q21l8o_k293lqGuTTT6F" version="22.0.3" type="device">
+<mxfile host="Electron" modified="2023-11-09T22:11:35.652Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.0.3 Chrome/114.0.5735.289 Electron/25.8.4 Safari/537.36" etag="2Ok6dZCbacjt0LNWfMUG" version="22.0.3" type="device">
   <diagram name="Page-1" id="2YBvvXClWsGukQMizWep">
-    <mxGraphModel dx="4037" dy="1851" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2359" dy="877" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -199,7 +199,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="bfkDFO_SThVbLGaq-HxU-51" value="Message&amp;nbsp;&lt;br&gt;Interpreter" style="html=1;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#000000;" parent="1" vertex="1">
+        <mxCell id="bfkDFO_SThVbLGaq-HxU-51" value="Packet&amp;nbsp;&lt;br&gt;Interpreter" style="html=1;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#000000;" parent="1" vertex="1">
           <mxGeometry x="776" y="633" width="60" height="30" as="geometry" />
         </mxCell>
         <mxCell id="bfkDFO_SThVbLGaq-HxU-52" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;REQUESTS QUEUE&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#000000;" parent="1" vertex="1">
@@ -227,10 +227,10 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="bfkDFO_SThVbLGaq-HxU-55" value="Message&amp;nbsp;&lt;br&gt;Interpreter" style="html=1;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#000000;" parent="1" vertex="1">
+        <mxCell id="bfkDFO_SThVbLGaq-HxU-55" value="Packet&amp;nbsp;&lt;br&gt;Interpreter" style="html=1;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#000000;" parent="1" vertex="1">
           <mxGeometry x="586" y="593" width="60" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="bfkDFO_SThVbLGaq-HxU-56" value="Message&amp;nbsp;&lt;br&gt;Interpreter" style="html=1;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#000000;" parent="1" vertex="1">
+        <mxCell id="bfkDFO_SThVbLGaq-HxU-56" value="Packet&amp;nbsp;&lt;br&gt;Interpreter" style="html=1;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#000000;" parent="1" vertex="1">
           <mxGeometry x="196" y="308" width="60" height="30" as="geometry" />
         </mxCell>
         <mxCell id="bfkDFO_SThVbLGaq-HxU-57" value="Process" style="html=1;whiteSpace=wrap;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#000000;" parent="1" vertex="1">
@@ -306,14 +306,11 @@
         <mxCell id="NXG5TVBwu8Oyc2Any5oV-19" value="Packet&lt;br&gt;depth" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#D9B857;fontSize=16;" parent="1" vertex="1">
           <mxGeometry x="276" y="814" width="54" height="45" as="geometry" />
         </mxCell>
-        <mxCell id="6kbEfd7pB--qjmriXDOf-2" value="Message&amp;nbsp;&lt;br&gt;Interpreter" style="html=1;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#000000;" vertex="1" parent="1">
+        <mxCell id="6kbEfd7pB--qjmriXDOf-2" value="Packet&amp;nbsp;&lt;br&gt;Interpreter" style="html=1;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#000000;" vertex="1" parent="1">
           <mxGeometry x="-97" y="366" width="60" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="6kbEfd7pB--qjmriXDOf-3" value="Request&amp;nbsp;&lt;br&gt;Manager" style="html=1;whiteSpace=wrap;fillColor=#d2ccff;strokeColor=#d79b00;fontColor=#000000;" vertex="1" parent="1">
+        <mxCell id="6kbEfd7pB--qjmriXDOf-3" value="Packet&amp;nbsp;&lt;br&gt;Analiser" style="html=1;whiteSpace=wrap;fillColor=#d2ccff;strokeColor=#d79b00;fontColor=#000000;" vertex="1" parent="1">
           <mxGeometry x="-97" y="423" width="60" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="6kbEfd7pB--qjmriXDOf-4" value="Request&amp;nbsp;&lt;br&gt;Manager" style="html=1;whiteSpace=wrap;fillColor=#d2ccff;strokeColor=#d79b00;fontColor=#000000;" vertex="1" parent="1">
-          <mxGeometry x="406" y="393" width="60" height="30" as="geometry" />
         </mxCell>
         <mxCell id="6kbEfd7pB--qjmriXDOf-7" value="&lt;font color=&quot;#000000&quot;&gt;COAP CLIENT&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#eac89a;" vertex="1" parent="1">
           <mxGeometry x="-297" y="113" width="306" height="46" as="geometry" />
@@ -336,7 +333,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="6kbEfd7pB--qjmriXDOf-11" value="Message&amp;nbsp;&lt;br&gt;Interpreter" style="html=1;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#000000;" vertex="1" parent="1">
+        <mxCell id="6kbEfd7pB--qjmriXDOf-11" value="Packet&amp;nbsp;&lt;br&gt;Interpreter" style="html=1;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#000000;" vertex="1" parent="1">
           <mxGeometry x="-101" y="254" width="60" height="30" as="geometry" />
         </mxCell>
         <mxCell id="6kbEfd7pB--qjmriXDOf-12" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};strokeColor=#FFD966;fillColor=#fccf9b;" vertex="1" parent="1">
@@ -364,7 +361,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="6kbEfd7pB--qjmriXDOf-15" value="Message&amp;nbsp;&lt;br&gt;Interpreter" style="html=1;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#000000;" vertex="1" parent="1">
+        <mxCell id="6kbEfd7pB--qjmriXDOf-15" value="Packet&lt;br&gt;Interpreter" style="html=1;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#000000;" vertex="1" parent="1">
           <mxGeometry x="-94" y="663" width="60" height="30" as="geometry" />
         </mxCell>
         <mxCell id="6kbEfd7pB--qjmriXDOf-16" value="&lt;span style=&quot;background-color: rgb(185, 224, 165);&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;response&lt;/font&gt;&lt;/span&gt;" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;strokeColor=#F0C89A;" edge="1" parent="1">
@@ -377,6 +374,9 @@
         </mxCell>
         <mxCell id="6kbEfd7pB--qjmriXDOf-18" value="28 bits" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#D9B857;fontSize=16;" vertex="1" parent="1">
           <mxGeometry x="330" y="860" width="65" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="6kbEfd7pB--qjmriXDOf-22" value="Packet&amp;nbsp;&lt;br&gt;Analiser" style="html=1;whiteSpace=wrap;fillColor=#d2ccff;strokeColor=#d79b00;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="406" y="393" width="60" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
