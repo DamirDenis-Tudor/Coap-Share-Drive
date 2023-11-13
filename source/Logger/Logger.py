@@ -93,7 +93,7 @@ class CustomLogger:
             with open(self.log_file, 'a') as log_file:
                 log_file.write(log_message + "\n")
 
-    def __call__(self, func):
+    def __call__(self, func: object) -> object:
         """
         Decorator function to log function calls and results.
 

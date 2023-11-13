@@ -76,13 +76,26 @@ class PacketCode:
         return None
 
 
-class MultiplePackets(Enum):
-    SINGLE = "0"
-    MULTIPLE = "1"
+class EntityType(Enum):
+    NONE = "00"
+    FILE = "01"
+    FOLDER = "10"
 
     @staticmethod
     def get_field_name(value):
-        for member in MultiplePackets:
+        for member in EntityType:
+            if member.value == value:
+                return member
+        return None
+
+
+class NextState(Enum):
+    PACKET = "0"
+    NO_PACKET = "1"
+
+    @staticmethod
+    def get_field_name(value):
+        for member in NextState:
             if member.value == value:
                 return member
         return None

@@ -1,11 +1,17 @@
 from bitfields import Bits
+
+from source.Logger.Logger import CustomLogger, LogDestination
 from source.PacketManager.PacketUtils.Config import *
 from source.PacketManager.PacketUtils.TokenGen import TokenGenerator
 
+logger = CustomLogger(LogDestination.CONSOLE)
+
 
 class Packet:
-    def __init__(self, raw_packet: int, external_ip: str):
-        bits_packet = Bits(raw_packet)
+
+    def __init__(self, raw_packet: bytes, external_ip: str):
+        bits_packet = Bits(int.from_bytes(raw_packet, byteorder='big'))
+
         self.extern_ip = external_ip
         self.coap_ver = format(int(bits_packet[0]), '01b')
         self.packet_type = PacketType.get_field_name(format(int(bits_packet[1:3]), '02b'))
@@ -15,10 +21,16 @@ class Packet:
 
         index = self.token_length + 31
         self.token = int(bits_packet[31:index])
+        self.entity_type = EntityType.get_field_name(format(int(bits_packet[index:index + 2]), '02b'))
+
+        index += 2
         self.packet_depth = int(bits_packet[index:index + 4])
 
         index += 4
-        self.multiple_packets = MultiplePackets.get_field_name(format(int(bits_packet[index:index + 1]), '01b'))
+        self.packet_depth_order = int(bits_packet[index:index + 6])
+
+        index += 6
+        self.next_state = NextState.get_field_name(format(int(bits_packet[index:index + 1]), '01b'))
 
         index += 1
         self.payload_format = PayloadFormat.get_field_name(format(int(bits_packet[index:index + 2]), '02b'))
@@ -42,8 +54,10 @@ class Packet:
             f"  Packet Code: {self.packet_code}\n"
             f"  Packet ID: {self.packet_id}\n"
             f"  Token: {self.token}\n"
+            f"  Entity Type: {self.entity_type}\n"
             f"  Packet Depth: {self.packet_depth}\n"
-            f"  Multiple Packets: {self.multiple_packets}\n"
+            f"  Packet Depth Order: {self.packet_depth_order}\n"
+            f"  NextState: {self.next_state}\n"
             f"  Payload Format: {self.payload_format}\n"
             f"  Payload: {self.payload}\n"
         )
@@ -59,8 +73,10 @@ class Packet:
         packet_code = content.get("PacketCode").value
         packet_id = format(content.get("PacketId"), '016b')
         token = content.get("Token")
+        entity_type = content.get("EntityType").value
         packet_depth = format(content.get("PacketDepth"), '04b')
-        multiple_packets = content.get("MultiplePackets").value
+        packet_depth_order = format(content.get("PacketDepth"), '06b')
+        next_state = content.get("NextState").value
         payload_format = content.get("PayloadFormat").value
 
         payload = ''
@@ -73,45 +89,10 @@ class Packet:
                 payload = bin(content.get("Payload"))[2:]
         except (AttributeError, TypeError, UnicodeEncodeError) as invalid_payload:
             print(f"Invalid payload: {invalid_payload}")
-            # Handle the exception or add additional logging here
 
-        bits_sequence = coap_ver + packet_type + token_length + packet_code + packet_id + token \
-                        + packet_depth + multiple_packets + payload_format + payload
+        bits_sequence = coap_ver + packet_type + token_length + packet_code + packet_id + token + \
+                        entity_type + packet_depth + packet_depth_order + next_state + payload_format + payload
 
         matched_bytes = int(bits_sequence, 2).to_bytes((len(bits_sequence) + 7) // 8, byteorder='big')
 
-        return int.from_bytes(matched_bytes, byteorder='big')
-
-
-for x in range(1, 30):
-    # Test the encode method
-    encoded_packet = Packet.encode({
-        "CoapVer": 1,
-        "PacketType": PacketType.CON,
-        "TokenLength": TokenGenerator.TOKEN_LENGTH,
-        "PacketCode": PacketCode.RequestCode.GET,
-        "PacketId": 0,
-        "Token": TokenGenerator.generate_token(),
-        "PacketDepth": 0,
-        "MultiplePackets": MultiplePackets.MULTIPLE,
-        "PayloadFormat": PayloadFormat.STRING,
-        "Payload": "/text.txt"
-    })
-
-    packet = Packet(encoded_packet, "192.125.111.15")
-    print(packet)
-
-    encoded_packet1 = Packet.encode({
-        "CoapVer": 1,
-        "PacketType": PacketType.RST,
-        "TokenLength": TokenGenerator.TOKEN_LENGTH,
-        "PacketCode": PacketCode.RequestCode.EMPTY,
-        "PacketId": 0,
-        "Token": TokenGenerator.generate_token(),
-        "PacketDepth": 0,
-        "MultiplePackets": MultiplePackets.SINGLE,
-        "PayloadFormat": PayloadFormat.EMPTY,
-        "Payload": ""
-    })
-    packet1 = Packet(encoded_packet1, "192.125.0.15")
-    print(packet1)
+        return matched_bytes
