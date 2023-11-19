@@ -5,7 +5,7 @@
 
 # 2. CoAP Message Format
 
-![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/61aab857-2db1-4900-b847-26d4b9b00c93)
+![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/b7c8d616-c615-412d-89b8-31e86f128b9a)
 
 ### Packet Types
 - **Confirmable (CON - 00)**: Used for request messages expecting acknowledgments.
