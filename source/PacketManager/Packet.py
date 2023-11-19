@@ -1,15 +1,18 @@
+from abc import ABC
+
 from bitfields import Bits
 
-from source.Logger.Logger import CustomLogger, LogDestination
 from source.PacketManager.PacketUtils.Config import *
-from source.PacketManager.PacketUtils.TokenGen import TokenGenerator
-
-logger = CustomLogger(LogDestination.CONSOLE)
 
 
 class Packet:
 
     def __init__(self, raw_packet: bytes, external_ip: str):
+        self.__is_empty = False
+        if not raw_packet or external_ip == "":
+            self.__is_empty = True
+            return
+
         bits_packet = Bits(int.from_bytes(raw_packet, byteorder='big'))
 
         self.extern_ip = external_ip
@@ -45,6 +48,8 @@ class Packet:
             self.payload = bits_packet[index:].to_bytes().decode('utf-8')
 
     def __str__(self):
+        if self.__is_empty:
+            return f"Empty packet"
         return (
             f"Packet Details \n"
             f"  From: {self.extern_ip}\n"
@@ -63,7 +68,16 @@ class Packet:
         )
 
     def __repr__(self):
-        return str(self)
+        if self.__is_empty:
+            return f"Empty packet:"
+        return f"Packet(sender: {self.extern_ip}, tkn: {self.token} ,pkt_id {self.packet_id})"
+
+    @classmethod
+    def empty_packet(cls):
+        return cls(bytes(), "")
+
+    def is_empty(self):
+        return self.__is_empty
 
     @staticmethod
     def encode(content: dict):

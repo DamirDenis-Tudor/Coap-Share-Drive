@@ -1,4 +1,5 @@
 import threading
+from socket import socket
 
 from source.PacketManager.Packet import Packet
 
@@ -19,7 +20,13 @@ class PacketAnalyser:
         self.__folders = {}
         self.__files_depth = {}
         self.__files = {}
+        self.__skt = None
+
+    def set_socket(self, skt: socket):
+        self.__skt = skt
 
     def analyse_packet(self, packet: Packet):
+        # verify the format of the packet
+
         pass
 

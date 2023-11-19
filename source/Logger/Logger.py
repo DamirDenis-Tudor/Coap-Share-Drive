@@ -93,7 +93,7 @@ class CustomLogger:
             with open(self.log_file, 'a') as log_file:
                 log_file.write(log_message + "\n")
 
-    def __call__(self, func: object) -> object:
+    def __call__(self, func) -> object:
         """
         Decorator function to log function calls and results.
 
@@ -110,10 +110,14 @@ class CustomLogger:
             self.log(f"{threading.current_thread().name} Calling function: {func.__name__} {args}")
             try:
                 result = func(*args, **kwargs)
-                self.log(f"{threading.current_thread().name} Result of {func.__name__}: {result}")
-                return result
+                if result is not None:
+                    self.log(f"{threading.current_thread().name} Result of {func.__name__}: {result}")
+                    return result
             except Exception as e:
                 self.log(
                     f"{threading.current_thread().name} Function {func.__name__} encountered an exception: {str(e)}")
 
         return wrapper
+
+
+logger = CustomLogger(LogDestination.CONSOLE)
