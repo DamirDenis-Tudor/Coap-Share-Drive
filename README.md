@@ -5,7 +5,10 @@
 
 # 2. CoAP Message Format
 
-![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/b7c8d616-c615-412d-89b8-31e86f128b9a)
+![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/77f91bde-912f-44ca-87bd-8d2ed4cfff04)
+
+### Client IP
+- Field wrapped when the packet is recieved.
 
 ### Packet Types
 - **Confirmable (CON - 00)**: Used for request messages expecting acknowledgments.
@@ -55,19 +58,26 @@
 ### Token 
 - Identifier to group packets by response/request.
 
-### Format Length 
-- Value for Packet Depth, File Format, Total Packets.
+### Entity Type
+- **NONE = 00**
+- **FILE = 01**
+- **FOLDER = 10**
 
 ### Packet Depth
 - Represents packet depth within folders.
 
-### File Format
-- Code identifier for supported file extensions, sent with the last packet.
+### Packet Depth Order 
+- Packet depth within a folder.
 
-### Total Packets
-- Total number of expected packets, sent with the first packet.
+### Next State
+- **PACKET = 0**
+- **NO_PACKEt = 1**
 
-### Payload
-- Packet content (path, raw bytes, etc.).
+### Payload format
+- **EMPTY = 00**
+- **OPAQUE = 01**
+- **UINT = 10**
+- **STRING = 11**
+
 
 
