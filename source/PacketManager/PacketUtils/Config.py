@@ -99,3 +99,4 @@ class NextState(Enum):
             if member.value == value:
                 return member
         return None
+

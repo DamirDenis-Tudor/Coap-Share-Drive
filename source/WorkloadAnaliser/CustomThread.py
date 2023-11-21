@@ -1,10 +1,11 @@
 import socket
 
 from abc import ABC, abstractmethod
-from source.Logger.Logger import logger
+from source.Logger.Logger import logger, LogColor
 from threading import Thread, Event
 
 from source.PacketManager.Packet import Packet
+from source.Timer.Timer import Timer
 
 
 class CustomThread(Thread, ABC):
@@ -13,33 +14,35 @@ class CustomThread(Thread, ABC):
 
         self.__is_running = True
         self.__task_event = Event()
-        self._socket = None
-        self._current_packet: Packet = Packet.empty_packet()
+        self._socket: socket = None
+        self._request_queue: list[Packet] = []
 
-    @logger
+        self._timer = Timer()
+        self._timer.reset()
+
     def run(self):
         logger.log(f"{self.name} started.")
+
         while self.__is_running:
             self.__task_event.wait()
-            if not self.__is_running:
-                break
             self._solve_task()
             self.__task_event.clear()
-        logger.log(f"{self.name} stopped.")
+
+            if not self.__is_running:
+                break
 
     @logger
     def stop(self):
-        logger.log(f"Stopping {self.name}...")
         self.__is_running = False
-        self.__task_event.set()  
+        self.__task_event.set()
         self.join()
+
         logger.log(f"{self.name} stopped successfully.")
 
-    @logger
     def submit_task(self, packet: Packet, skt: socket):
-        logger.log(f"Task submitted to {self.name}.")
+
         self._socket = skt
-        self._current_packet = packet
+        self._request_queue.append(packet)
         self.__task_event.set()
 
     @logger

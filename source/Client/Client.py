@@ -1,3 +1,4 @@
+from select import select
 from socket import *
 
 from source.PacketManager.Packet import *
@@ -18,6 +19,17 @@ encoded_packet = Packet.encode({
     "Payload": "/text.txt"
 })
 
+pkt = Packet(encoded_packet, ('127.0.0.5', int(2002)))
+print(pkt)
+print()
+
 s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
 s.bind(('127.0.0.5', int(2002)))
-s.sendto(encoded_packet, ("127.0.0.1", int(8730)))
+s.sendto(encoded_packet, ("127.0.0.1", int(6601)))
+
+while True:
+    skt, _, _ = select([s], [], [], 1)
+
+    if skt:
+        data, address = s.recvfrom(1032)
+        print(Packet(data,address))

@@ -1,13 +1,12 @@
-from abc import ABC
-
 from bitfields import Bits
 
+from source.Logger.Logger import logger
 from source.PacketManager.PacketUtils.Config import *
 
 
 class Packet:
 
-    def __init__(self, raw_packet: bytes, external_ip: str):
+    def __init__(self, raw_packet: bytes, external_ip: tuple):
         self.__is_empty = False
         if not raw_packet or external_ip == "":
             self.__is_empty = True
@@ -50,22 +49,7 @@ class Packet:
     def __str__(self):
         if self.__is_empty:
             return f"Empty packet"
-        return (
-            f"Packet Details \n"
-            f"  From: {self.extern_ip}\n"
-            f"  Coap Version: {self.coap_ver}\n"
-            f"  Packet Type: {self.packet_type}\n"
-            f"  Token Length: {self.token_length}\n"
-            f"  Packet Code: {self.packet_code}\n"
-            f"  Packet ID: {self.packet_id}\n"
-            f"  Token: {self.token}\n"
-            f"  Entity Type: {self.entity_type}\n"
-            f"  Packet Depth: {self.packet_depth}\n"
-            f"  Packet Depth Order: {self.packet_depth_order}\n"
-            f"  NextState: {self.next_state}\n"
-            f"  Payload Format: {self.payload_format}\n"
-            f"  Payload: {self.payload}\n"
-        )
+        return str(self.to_dict())
 
     def __repr__(self):
         if self.__is_empty:
@@ -79,7 +63,28 @@ class Packet:
     def is_empty(self):
         return self.__is_empty
 
+    def to_dict(self):
+        if self.is_empty():
+            return {"EmptyPacket": True}
+
+        return {
+            "ExternIP": self.extern_ip,
+            "CoapVer": self.coap_ver,
+            "PacketType": self.packet_type,
+            "TokenLength": self.token_length,
+            "PacketCode": self.packet_code,
+            "PacketId": self.packet_id,
+            "Token": self.token,
+            "EntityType": self.entity_type,
+            "PacketDepth": self.packet_depth,
+            "PacketDepthOrder": self.packet_depth_order,
+            "NextState": self.next_state,
+            "PayloadFormat": self.payload_format,
+            "Payload": self.payload
+        }
+
     @staticmethod
+    @logger
     def encode(content: dict):
         coap_ver = str(content.get("CoapVer"))
         packet_type = content.get("PacketType").value
