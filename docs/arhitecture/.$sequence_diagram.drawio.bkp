@@ -1,4 +1,4 @@
-<mxfile host="Electron" modified="2023-11-19T21:39:05.546Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.1.2 Chrome/114.0.5735.289 Electron/25.9.4 Safari/537.36" etag="q6gfnscwW25Edeom6gzv" version="22.1.2" type="device">
+<mxfile host="Electron" modified="2023-11-19T21:41:51.020Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.1.2 Chrome/114.0.5735.289 Electron/25.9.4 Safari/537.36" etag="c-p_X7TjPPNrP5_IkoE-" version="22.1.2" type="device">
   <diagram name="Page-1" id="2YBvvXClWsGukQMizWep">
     <mxGraphModel dx="2284" dy="1933" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -375,10 +375,10 @@
         <mxCell id="FPbYNPfOj-ovu69s9hR5-3" value="1 biti" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#D9B857;fontSize=16;" parent="1" vertex="1">
           <mxGeometry x="497" y="30.75" width="60" height="31.25" as="geometry" />
         </mxCell>
-        <mxCell id="FPbYNPfOj-ovu69s9hR5-5" value="&lt;font style=&quot;font-size: 16px;&quot;&gt;SERVER WRAPPING&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#76608a;fontColor=#ffffff;strokeColor=#432D57;" parent="1" vertex="1">
+        <mxCell id="FPbYNPfOj-ovu69s9hR5-5" value="&lt;font style=&quot;font-size: 16px;&quot;&gt;RECEIVER WRAPPING&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#76608a;fontColor=#ffffff;strokeColor=#432D57;" parent="1" vertex="1">
           <mxGeometry x="-231" y="-72" width="1114" height="29" as="geometry" />
         </mxCell>
-        <mxCell id="FPbYNPfOj-ovu69s9hR5-6" value="&lt;span style=&quot;font-size: 16px;&quot;&gt;CLIENT IP&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#76608a;fontColor=#ffffff;strokeColor=#432D57;" parent="1" vertex="1">
+        <mxCell id="FPbYNPfOj-ovu69s9hR5-6" value="&lt;span style=&quot;font-size: 16px;&quot;&gt;SENDER IP&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#76608a;fontColor=#ffffff;strokeColor=#432D57;" parent="1" vertex="1">
           <mxGeometry x="-231" y="-43" width="155" height="75" as="geometry" />
         </mxCell>
         <mxCell id="FPbYNPfOj-ovu69s9hR5-8" value="&lt;span style=&quot;font-size: 16px;&quot;&gt;32 bits&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#76608a;fontColor=#ffffff;strokeColor=#432D57;" parent="1" vertex="1">

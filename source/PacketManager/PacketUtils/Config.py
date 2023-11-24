@@ -100,3 +100,6 @@ class NextState(Enum):
                 return member
         return None
 
+
+TOKEN_LENGTH = "0111"
+SERVER_IP_PORT = ('127.0.0.1', 6000)

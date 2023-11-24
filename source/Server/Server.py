@@ -24,12 +24,12 @@ class Server:
     @logger
     def start_loop(self):
         while True:
-            active_sockets, _, _ = select(self.__sockets, [], [], 1)
+            active_sockets, _, _ = select(self.__sockets, [], [], 0.01)
 
             if active_sockets:
                 for active_socket in active_sockets:
                     data, address = active_socket.recvfrom(1032)
-                    self.__worker_pool.submit_task(Packet(data, address), active_socket)
+                    self.__worker_pool.submit_task(Packet(data, active_socket, address))
 
             self.__worker_pool.check_idle_workers()
 
@@ -37,6 +37,3 @@ class Server:
 if __name__ == '__main__':
     SERVER_PORTS = [i for i in range(6600, 6605)]
     Server('127.0.0.1', SERVER_PORTS).start_loop()
-    # TODO select from writing
-    # GIL
-

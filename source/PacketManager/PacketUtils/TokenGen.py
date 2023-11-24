@@ -1,11 +1,18 @@
+from source.PacketManager.PacketUtils.Config import TOKEN_LENGTH
+
+
 class TokenGenerator:
-    TOKEN_LENGTH = "0011"
     TOKEN_COUNTER = 0
 
     @staticmethod
     def generate_token():
-        length = int(TokenGenerator.TOKEN_LENGTH, 2)
-        TokenGenerator.TOKEN_COUNTER = TokenGenerator.TOKEN_COUNTER % (length + 1)
-        tkn = format(TokenGenerator.TOKEN_COUNTER, f'0{length}b')
+        token_length = int(TOKEN_LENGTH, 2)
+
+        max_token = 2**token_length - 1
+
+        TokenGenerator.TOKEN_COUNTER = TokenGenerator.TOKEN_COUNTER % (max_token + 1)
+
+        tkn = format(TokenGenerator.TOKEN_COUNTER, f'0{token_length}b')
+
         TokenGenerator.TOKEN_COUNTER += 1
         return tkn

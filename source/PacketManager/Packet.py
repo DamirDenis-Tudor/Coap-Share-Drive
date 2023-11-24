@@ -1,3 +1,5 @@
+from socket import socket
+
 from bitfields import Bits
 
 from source.Logger.Logger import logger
@@ -6,14 +8,15 @@ from source.PacketManager.PacketUtils.Config import *
 
 class Packet:
 
-    def __init__(self, raw_packet: bytes, external_ip: tuple):
+    def __init__(self, raw_packet: bytes, skt: socket = None, external_ip: tuple = None):
         self.__is_empty = False
-        if not raw_packet or external_ip == "":
+        if not raw_packet:
             self.__is_empty = True
             return
 
         bits_packet = Bits(int.from_bytes(raw_packet, byteorder='big'))
 
+        self.socket = skt
         self.extern_ip = external_ip
         self.coap_ver = format(int(bits_packet[0]), '01b')
         self.packet_type = PacketType.get_field_name(format(int(bits_packet[1:3]), '02b'))
@@ -22,7 +25,7 @@ class Packet:
         self.packet_id = int(bits_packet[15:31])
 
         index = self.token_length + 31
-        self.token = int(bits_packet[31:index])
+        self.token = format(int(bits_packet[31:index]), f'0{self.token_length}b')
         self.entity_type = EntityType.get_field_name(format(int(bits_packet[index:index + 2]), '02b'))
 
         index += 2
@@ -54,11 +57,11 @@ class Packet:
     def __repr__(self):
         if self.__is_empty:
             return f"Empty packet:"
-        return f"Packet(sender: {self.extern_ip}, tkn: {self.token} ,pkt_id {self.packet_id})"
+        return f"Packet(sender: {self.extern_ip}, tkn: {self.token} ,pkt_id {self.packet_id}), payload {self.payload}"
 
     @classmethod
     def empty_packet(cls):
-        return cls(bytes(), "")
+        return cls(bytes())
 
     def is_empty(self):
         return self.__is_empty
@@ -71,7 +74,7 @@ class Packet:
             "ExternIP": self.extern_ip,
             "CoapVer": self.coap_ver,
             "PacketType": self.packet_type,
-            "TokenLength": self.token_length,
+            "TokenLength": format(self.token_length, '04b'),
             "PacketCode": self.packet_code,
             "PacketId": self.packet_id,
             "Token": self.token,
@@ -84,7 +87,6 @@ class Packet:
         }
 
     @staticmethod
-    @logger
     def encode(content: dict):
         coap_ver = str(content.get("CoapVer"))
         packet_type = content.get("PacketType").value
