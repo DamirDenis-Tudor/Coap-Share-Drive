@@ -1,8 +1,9 @@
 from source.Logger.Logger import logger
-from source.WorkloadAnaliser.CustomThread import CustomThread
+from source.Workload.Core.CustomThread import CustomThread
+from source.Workload.Core.FileWorker import FileWorker
 
 
-class ClientWorker(CustomThread):
+class ClientWorker(CustomThread, FileWorker):
     def __init__(self, shared_in_working: list[tuple[int, str]]):
         super().__init__(shared_in_working)
         self.name = f"ClientWorker[{self.name}]"

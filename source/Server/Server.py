@@ -4,8 +4,8 @@ from _socket import IPPROTO_UDP
 from socket import socket, AF_INET, SOCK_DGRAM
 
 from source.Logger.Logger import logger
-from source.PacketManager.Packet import Packet
-from source.WorkloadAnaliser.WorkerPool import WorkerPool
+from source.Packet.Packet import Packet
+from source.Workload.WorkerPool import WorkerPool
 
 
 class Server:
@@ -36,4 +36,6 @@ class Server:
 
 if __name__ == '__main__':
     SERVER_PORTS = [i for i in range(6600, 6605)]
-    Server('127.0.0.1', SERVER_PORTS).start_loop()
+    Server('127.0.0.2', SERVER_PORTS).start_loop()
+
+

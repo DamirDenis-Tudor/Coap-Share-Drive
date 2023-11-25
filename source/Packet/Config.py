@@ -65,6 +65,7 @@ class PacketCode:
         INTERNAL_SERVER_ERROR = "10100000"
         NOT_IMPLEMENTED = "10100001"
         SERVICE_UNAVAILABLE = "10100011"
+        INVALID_PATH = "10100100"
 
     @staticmethod
     def get_field_name(value):
@@ -102,4 +103,8 @@ class NextState(Enum):
 
 
 TOKEN_LENGTH = "0111"
+PAYLOAD_LENGTH = 1024
 SERVER_IP_PORT = ('127.0.0.1', 6000)
+
+FILE_PATH = 0
+TOTAL_FILE_PACKETS = 1

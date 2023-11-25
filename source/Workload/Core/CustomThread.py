@@ -1,10 +1,8 @@
-import socket
-
 from abc import ABC, abstractmethod
-from source.Logger.Logger import logger
 from threading import Thread, Event
 
-from source.PacketManager.Packet import Packet
+from source.Logger.Logger import logger
+from source.Packet.Packet import Packet
 from source.Timer.Timer import Timer
 
 
@@ -21,12 +19,6 @@ class CustomThread(Thread, ABC):
 
         self._timer = Timer()
         self._timer.reset()
-
-    def get_queue_size(self):
-        return len(self._request_queue)
-
-    def get_idle_time(self):
-        return self._timer.elapsed_time()
 
     @logger
     def run(self):
@@ -56,3 +48,9 @@ class CustomThread(Thread, ABC):
     @abstractmethod
     def _solve_task(self):
         pass
+
+    def get_queue_size(self):
+        return len(self._request_queue)
+
+    def get_idle_time(self):
+        return self._timer.elapsed_time()

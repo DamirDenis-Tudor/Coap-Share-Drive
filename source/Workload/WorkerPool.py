@@ -1,7 +1,7 @@
 from source.Logger.Logger import logger
-from source.PacketManager.Packet import Packet
-from source.WorkloadAnaliser.CustomThread import CustomThread
-from source.WorkloadAnaliser.ServerWorker import ServerWorker
+from source.Packet.Packet import Packet
+from source.Workload.Core.CustomThread import CustomThread
+from source.Workload.ServerWorker import ServerWorker
 
 
 class WorkerPool(CustomThread):
@@ -36,7 +36,7 @@ class WorkerPool(CustomThread):
         return chosen_worker
 
     def _solve_task(self):
-        in_working = (self._task.token, self._task.extern_ip)
+        in_working = (self._task.get_token(), self._task.get_external_ip())
         if in_working not in self._shared_in_working:
             self._shared_in_working.append(in_working)
             self.__choose_worker().submit_task(self._task)

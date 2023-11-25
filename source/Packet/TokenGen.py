@@ -1,4 +1,4 @@
-from source.PacketManager.PacketUtils.Config import TOKEN_LENGTH
+from source.Packet.Config import TOKEN_LENGTH
 
 
 class TokenGenerator:

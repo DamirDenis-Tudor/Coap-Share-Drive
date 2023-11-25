@@ -133,7 +133,7 @@ class CustomLogger:
                     return result
             except Exception as e:
                 self.log(
-                    f"{name} Function {func.__name__} encountered an exception: {str(e)}", LogColor.RED)
+                    f"{name} Function {func.__name__} encountered an exception: {e}", LogColor.RED)
 
         return wrapper
 
