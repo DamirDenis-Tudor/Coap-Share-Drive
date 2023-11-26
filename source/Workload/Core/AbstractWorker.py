@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 from threading import Thread, Event
 
 from source.Logger.Logger import logger
-from source.Packet.Packet import Packet
+from source.Packet.CoapPacket import CoapPacket
+from source.Packet.Old_Packet.Packet import Packet
 from source.Timer.Timer import Timer
 
 
@@ -13,9 +14,9 @@ class CustomThread(Thread, ABC):
         self.__is_running = True
         self.__task_event = Event()
 
-        self._request_queue: list[Packet] = []
+        self._request_queue: list[CoapPacket] = []
         self._shared_in_working = shared_in_working
-        self._task = Packet.empty_packet()
+        self._task = CoapPacket()
 
         self._timer = Timer()
         self._timer.reset()
@@ -41,7 +42,8 @@ class CustomThread(Thread, ABC):
         self.__task_event.set()
         self.join()
 
-    def submit_task(self, packet: Packet):
+    @logger
+    def submit_task(self, packet: CoapPacket):
         self._request_queue.append(packet)
         self.__task_event.set()
 

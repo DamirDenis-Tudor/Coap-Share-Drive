@@ -1,4 +1,4 @@
-from source.Packet.Config import TOKEN_LENGTH
+from source.Packet.Old_Packet.Config import TOKEN_LENGTH
 
 
 class TokenGenerator:

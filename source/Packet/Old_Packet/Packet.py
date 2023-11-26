@@ -1,6 +1,6 @@
 from socket import socket
 from bitfields import Bits
-from source.Packet.Config import *
+from source.Packet.Old_Packet.Config import *
 
 
 class Packet:
@@ -42,7 +42,7 @@ class Packet:
         self.__payload_uint: int
         self.__payload_string: str
         if self.__payload_format == PayloadFormat.OPAQUE:
-            self.__payload_opaque = bytes(bits_packet[index:])
+            self.__payload_opaque = bits_packet[index:].to_bytes().decode('utf-8')
         elif self.__payload_format == PayloadFormat.UINT:
             self.__payload_uint = int(bits_packet[index:])
         elif self.__payload_format == PayloadFormat.STRING:
@@ -86,17 +86,19 @@ class Packet:
         try:
             if content.get("PayloadFormat") == PayloadFormat.STRING:
                 payload = ''.join(format(ord(b), '08b') for b in str(content.get("Payload")))
+                payload = int(payload, 2).to_bytes((len(payload) + 7) // 8, byteorder='big')
             elif content.get("PayloadFormat") == PayloadFormat.UINT:
                 payload = bin(content.get("Payload"))[2:-1]
+                payload = int(payload, 2).to_bytes((len(payload) + 7) // 8, byteorder='big')
             elif content.get("PayloadFormat") == PayloadFormat.OPAQUE:
-                payload = bin(int.from_bytes(content.get("Payload"), byteorder='big'))[2:-1]
+                payload = content.get("Payload")
         except (AttributeError, TypeError, UnicodeEncodeError) as invalid_payload:
             print(f"Invalid payload: {invalid_payload}")
 
-        bits_sequence = coap_ver + packet_type + token_length + packet_code + packet_id + token + \
-                        entity_type + packet_depth + packet_depth_order + next_state + payload_format + payload
+        bits_sequence = (coap_ver + packet_type + token_length + packet_code + packet_id + token +
+                         entity_type + packet_depth + packet_depth_order + next_state + payload_format)
 
-        matched_bytes = int(bits_sequence, 2).to_bytes((len(bits_sequence) + 7) // 8, byteorder='big')
+        matched_bytes = int(bits_sequence, 2).to_bytes((len(bits_sequence) + 7) // 8, byteorder='big') + payload
 
         return matched_bytes
 
