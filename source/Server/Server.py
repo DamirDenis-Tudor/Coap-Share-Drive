@@ -26,7 +26,7 @@ class Server:
 
             if active_socket:
                 data, address = self.__socket.recvfrom(1032)
-                self.__worker_pool.submit_task(CoapPacket.decode(data))
+                self.__worker_pool.submit_task(CoapPacket.decode(data, address, self.__socket))
 
             self.__worker_pool.check_idle_workers()
 

@@ -18,6 +18,7 @@ class CoAPCodeFormat(Enum):
     Each enumeration value represents a specific combination of CoAP message type and code.
     """
     # Request Codes
+    EMPTY = (0, 0)
     GET = (0, 1)
     POST = (0, 2)
     PUT = (0, 3)
@@ -29,12 +30,14 @@ class CoAPCodeFormat(Enum):
     SUCCESS_VALID = (2, 3)
     SUCCESS_CHANGED = (2, 4)
     SUCCESS_CONTENT = (2, 5)
+    SUCCESS_CONTINUE = (2, 31)
 
     CLIENT_ERROR_BAD_REQUEST = (4, 0)
     CLIENT_ERROR_UNAUTHORIZED = (4, 1)
     CLIENT_ERROR_FORBIDDEN = (4, 3)
     CLIENT_ERROR_NOT_FOUND = (4, 4)
     CLIENT_ERROR_METHOD_NOT_ALLOWED = (4, 5)
+    CLIENT_ENTITY_INCOMPLETE = (4, 8)
     CLIENT_ERROR_CONFLICT = (4, 9)
     CLIENT_ERROR_PRECONDITION_FAILED = (4, 12)
     CLIENT_ERROR_REQUEST_ENTITY_TOO_LARGE = (4, 13)
@@ -80,6 +83,8 @@ class CoAPOptionDelta(Enum):
     PROXY_URI = 35
     PROXY_SCHEME = 39
     SIZE1 = 60
+    BLOCK1 = 27
+    BLOCK2 = 23
 
 
 class CoAPContentFormat(Enum):
