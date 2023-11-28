@@ -3,12 +3,6 @@ from socket import *
 from source.Packet.CoapConfig import *
 from source.Packet.CoapPacket import CoapPacket
 
-# Block1 and Block2 options
-block_number = 0  # Starting block number
-block_size = 64  # Block size in bytes
-
-# CoAP message with Block1 and Block2 options
-# IS NECCESSRY TO HAVE AN OPTION THAT IS BELLOW 12 -> CONTENT FORMAT
 coap_message = CoapPacket(
     version=1,
     message_type=CoAPType.CON.value,
@@ -16,10 +10,11 @@ coap_message = CoapPacket(
     code=CoAPCodeFormat.GET.value(),
     message_id=0,
     options={
-        CoAPOptionDelta.URI_QUERY.value: "path",
-        CoAPOptionDelta.LOCATION_PATH.value: "path",
+        CoAPOptionDelta.LOCATION_PATH.value: "/documents/data/forder/test",
         CoAPOptionDelta.CONTENT_FORMAT.value: CoAPContentFormat.APPLICATION_JSON.value,
-        CoAPOptionDelta.BLOCK1.value: 12
+        CoAPOptionDelta.URI_HOST.value: "shareDrive/marian",
+        CoAPOptionDelta.URI_PORT.value: 69,
+        CoAPOptionDelta.SIZE1.value: 10
     },
     payload="""{"name":"marius"}""".encode("utf-8")
 )

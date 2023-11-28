@@ -1,4 +1,4 @@
-from enum import Enum, auto
+from enum import Enum
 
 
 class CoAPType(Enum):
@@ -80,11 +80,11 @@ class CoAPOptionDelta(Enum):
     URI_QUERY = 15
     ACCEPT = 17
     LOCATION_QUERY = 20
+    BLOCK2 = 23
+    BLOCK1 = 27
     PROXY_URI = 35
     PROXY_SCHEME = 39
     SIZE1 = 60
-    BLOCK1 = 27
-    BLOCK2 = 23
 
 
 class CoAPContentFormat(Enum):
