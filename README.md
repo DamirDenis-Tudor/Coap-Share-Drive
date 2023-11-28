@@ -5,7 +5,8 @@
 
 # 2. CoAP Message Format
 
-![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/77f91bde-912f-44ca-87bd-8d2ed4cfff04)
+
+![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/b6f86146-729d-46bf-b293-2bc29e7bbeae)
 
 ### Client IP
 - Field wrapped when the packet is recieved.
@@ -57,27 +58,3 @@
 
 ### Token 
 - Identifier to group packets by response/request.
-
-### Entity Type
-- **NONE = 00**
-- **FILE = 01**
-- **FOLDER = 10**
-
-### Packet Depth
-- Represents packet depth within folders.
-
-### Packet Depth Order 
-- Packet depth within a folder.
-
-### Next State
-- **PACKET = 0**
-- **NO_PACKEt = 1**
-
-### Payload format
-- **EMPTY = 00**
-- **OPAQUE = 01**
-- **UINT = 10**
-- **STRING = 11**
-
-
-

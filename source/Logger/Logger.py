@@ -9,6 +9,16 @@ class LogDestination(Enum):
     FILE = 2
 
 
+class LogColor(Enum):
+    RESET = '\033[0m'
+    RED = '\033[91m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    BLUE = '\033[94m'
+    MAGENTA = '\033[95m'
+    CYAN = '\033[96m'
+
+
 class CustomLogger:
     """
     A Singleton Thread-Safe Logger class that allows logging to the console or a log file.
@@ -21,6 +31,7 @@ class CustomLogger:
         destination (LogDestination): The destination for logging (CONSOLE or FILE).
     """
     _instance = None
+    _lock = threading.Lock()
 
     def __init__(self, destination):
         """
@@ -77,21 +88,27 @@ class CustomLogger:
             if os.path.isfile(file_path):
                 os.remove(file_path)
 
-    def log(self, message):
+    def log(self, message, color=LogColor.GREEN):
         """
         Log a message to the console or the log file.
 
         Args:
             message (str): The message to log.
+            color (LogColor, optional): The color for console output.
+
+        Note:
+            The color argument is only used for console logging.
         """
         current_time = datetime.datetime.now().strftime("%H:%M:%S")
         log_message = f"{current_time} - {message}"
-
-        if self.destination == LogDestination.CONSOLE:
-            print(log_message)
-        elif self.destination == LogDestination.FILE:
-            with open(self.log_file, 'a') as log_file:
-                log_file.write(log_message + "\n")
+        with CustomLogger._lock:
+            if self.destination == LogDestination.CONSOLE:
+                if color is not None:
+                    log_message = f"{color.value}{log_message}{LogColor.RESET.value}"
+                print(log_message)
+            elif self.destination == LogDestination.FILE:
+                with open(self.log_file, 'a') as log_file:
+                    log_file.write(log_message + "\n")
 
     def __call__(self, func) -> object:
         """
@@ -107,15 +124,16 @@ class CustomLogger:
         """
 
         def wrapper(*args, **kwargs):
-            self.log(f"{threading.current_thread().name} Calling function: {func.__name__} {args}")
+            name = threading.current_thread().name
+            self.log(f"{name} Calling function: {func.__name__} {args}", LogColor.MAGENTA)
             try:
                 result = func(*args, **kwargs)
                 if result is not None:
-                    self.log(f"{threading.current_thread().name} Result of {func.__name__}: {result}")
+                    self.log(f"{name} Result of {func.__name__}: {result}", LogColor.BLUE)
                     return result
             except Exception as e:
                 self.log(
-                    f"{threading.current_thread().name} Function {func.__name__} encountered an exception: {str(e)}")
+                    f"{name} Function {func.__name__} encountered an exception: {e}", LogColor.RED)
 
         return wrapper
 
