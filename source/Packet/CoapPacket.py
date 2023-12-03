@@ -13,7 +13,7 @@ class CoapPacket:
     """
 
     def __init__(self, version=1, message_type=0, token=b"", code=0,
-                 message_id=0, options=None, payload=None, sender_ip_port: tuple = (), skt: socket = None):
+                 message_id=0, options=None, payload: object = None, sender_ip_port: tuple = (), skt: socket = None):
         """
         Initializes a CoAPPacket instance with the provided parameters.
 
@@ -232,7 +232,8 @@ class CoapPacket:
             return option_value
         elif (delta == CoAPOptionDelta.URI_HOST.value or delta == CoAPOptionDelta.URI_PATH.value
               or delta == CoAPOptionDelta.URI_QUERY.value or delta == CoAPOptionDelta.LOCATION_PATH.value
-              or delta == CoAPOptionDelta.PROXY_URI.value or delta == CoAPOptionDelta.PROXY_SCHEME.value):
+              or delta == CoAPOptionDelta.PROXY_URI.value or delta == CoAPOptionDelta.PROXY_SCHEME.value) \
+                or delta == CoAPOptionDelta.MOVE_TO.value:
             return option_value.decode('utf-8')
         elif (delta == CoAPOptionDelta.ETAG.value or delta == CoAPOptionDelta.URI_PORT.value
               or delta == CoAPOptionDelta.MAX_AGE.value or delta == CoAPOptionDelta.ACCEPT.value

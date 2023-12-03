@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from enum import Enum, auto
 from threading import Thread, Event
 
 from source.Logger.Logger import logger
@@ -7,7 +8,12 @@ from source.Packet.Old_Packet.Packet import Packet
 from source.Timer.Timer import Timer
 
 
-class CustomThread(Thread, ABC):
+class WorkerType(Enum):
+    SERVER_WORKER = auto(),
+    CLIENT_WORKER = auto()
+
+
+class AbstractWorker(Thread, ABC):
     def __init__(self, shared_in_working: list[tuple[int, str]]):
         super().__init__()
 
@@ -20,6 +26,12 @@ class CustomThread(Thread, ABC):
 
         self._timer = Timer()
         self._timer.reset()
+
+    def get_queue_size(self):
+        return len(self._request_queue)
+
+    def get_idle_time(self):
+        return self._timer.elapsed_time()
 
     @logger
     def run(self):
@@ -50,9 +62,3 @@ class CustomThread(Thread, ABC):
     @abstractmethod
     def _solve_task(self):
         pass
-
-    def get_queue_size(self):
-        return len(self._request_queue)
-
-    def get_idle_time(self):
-        return self._timer.elapsed_time()
