@@ -85,6 +85,8 @@ class CoAPOptionDelta(Enum):
     PROXY_URI = 35
     PROXY_SCHEME = 39
     SIZE1 = 60
+    MOVE_TO = 101
+    RENAME = 102
 
 
 class CoAPContentFormat(Enum):
