@@ -1,8 +1,7 @@
 import json
 import os
 
-from source.Logger.Logger import logger
-from source.Packet.Old_Packet.Config import EntityType, PAYLOAD_LENGTH
+from source.Packet.Old_Packet.Config import PAYLOAD_LENGTH
 
 
 class Utilities:
@@ -64,8 +63,3 @@ class Utilities:
         file_size = os.path.getsize(file_path)
         total_packets = (file_size + PAYLOAD_LENGTH - 1) // PAYLOAD_LENGTH
         return total_packets
-
-
-# d = Utilities.iterate_folder("/home/damir/GithubRepos/proiectrcp2023-echipa-21-2023/test").__str__()
-# for data in Utilities.slit_string_on_packets(d):
-#    print(data)

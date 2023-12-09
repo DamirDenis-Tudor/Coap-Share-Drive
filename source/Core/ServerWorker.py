@@ -1,4 +1,6 @@
-from source.Logger.Logger import logger
+from time import sleep
+
+from source.Utilities.Logger import logger
 from source.Core.AbstractWorker import AbstractWorker
 
 
@@ -9,7 +11,5 @@ class ServerWorker(AbstractWorker):
 
     @logger
     def _solve_task(self):
-        # interpret logic
-
-        in_working = (self._task.token, self._task.sender_ip_port)
-        self._shared_in_working.remove(in_working)
+        logger.log(f"{self.name} Solving task {self._task.__repr__()}")
+        sleep(10)

@@ -1,5 +1,6 @@
 from socket import socket
-from source.Packet.CoapConfig import CoAPOptionDelta, CoAPContentFormat
+
+from source.Packet.CoapConfig import CoapOptionDelta
 
 
 class CoapPacket:
@@ -79,7 +80,7 @@ class CoapPacket:
         return coap_packet
 
     @classmethod
-    def decode(cls, coap_packet):
+    def decode(cls, coap_packet, address: tuple, skt: socket):
         """
         Decode a byte representation of a CoAP packet.
 
@@ -94,6 +95,9 @@ class CoapPacket:
 
         Returns:
             CoapPacket: Decoded CoapPacket instance.
+            :param coap_packet:
+            :param address:
+            :param skt:
         """
         # Header
         version = (coap_packet[0] >> 6) & 0b11
@@ -146,7 +150,7 @@ class CoapPacket:
 
         # TODO: conversion of the payload
 
-        return cls(version, message_type, token, code, message_id, options, payload)
+        return cls(version, message_type, token, code, message_id, options, payload, address, skt)
 
     @staticmethod
     def _code_option(option_value, delta_value):
@@ -228,20 +232,19 @@ class CoapPacket:
         Returns:
             Any: Interpreted value of the CoAP option.
         """
-        if delta == CoAPOptionDelta.IF_MATCH.value:
+        if delta == CoapOptionDelta.IF_MATCH.value:
             return option_value
-        elif (delta == CoAPOptionDelta.URI_HOST.value or delta == CoAPOptionDelta.URI_PATH.value
-              or delta == CoAPOptionDelta.URI_QUERY.value or delta == CoAPOptionDelta.LOCATION_PATH.value
-              or delta == CoAPOptionDelta.PROXY_URI.value or delta == CoAPOptionDelta.PROXY_SCHEME.value) \
-                or delta == CoAPOptionDelta.MOVE_TO.value:
+        elif (delta == CoapOptionDelta.URI_HOST.value or delta == CoapOptionDelta.URI_PATH.value
+              or delta == CoapOptionDelta.URI_QUERY.value or delta == CoapOptionDelta.LOCATION_PATH.value
+              or delta == CoapOptionDelta.PROXY_URI.value or delta == CoapOptionDelta.PROXY_SCHEME.value) :
             return option_value.decode('utf-8')
-        elif (delta == CoAPOptionDelta.ETAG.value or delta == CoAPOptionDelta.URI_PORT.value
-              or delta == CoAPOptionDelta.MAX_AGE.value or delta == CoAPOptionDelta.ACCEPT.value
-              or delta == CoAPOptionDelta.SIZE1.value or CoAPOptionDelta.BLOCK1 or CoAPOptionDelta.BLOCK2):
+        elif (delta == CoapOptionDelta.ETAG.value or delta == CoapOptionDelta.URI_PORT.value
+              or delta == CoapOptionDelta.MAX_AGE.value or delta == CoapOptionDelta.ACCEPT.value
+              or delta == CoapOptionDelta.SIZE1.value or CoapOptionDelta.BLOCK1 or CoapOptionDelta.BLOCK2):
             return int.from_bytes(option_value, byteorder='big')
-        elif delta == CoAPOptionDelta.IF_NONE_MATCH.value:
+        elif delta == CoapOptionDelta.IF_NONE_MATCH.value:
             return b''
-        elif delta == CoAPOptionDelta.CONTENT_FORMAT.value:
+        elif delta == CoapOptionDelta.CONTENT_FORMAT.value:
             return int.from_bytes(option_value, byteorder='big')
 
     def __repr__(self):

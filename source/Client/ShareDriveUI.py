@@ -11,7 +11,7 @@ class FileItem:
         self.name = name
         self.is_folder = is_folder
         self.children = []
-        self.parent = parent  # Add the parent attribute
+        self.parent = parent
 
     def add_child(self, child):
         child.parent = self

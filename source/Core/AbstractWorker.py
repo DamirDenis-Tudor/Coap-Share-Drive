@@ -2,10 +2,9 @@ from abc import ABC, abstractmethod
 from enum import Enum, auto
 from threading import Thread, Event
 
-from source.Logger.Logger import logger
+from source.Utilities.Logger import logger
 from source.Packet.CoapPacket import CoapPacket
-from source.Packet.Old_Packet.Packet import Packet
-from source.Timer.Timer import Timer
+from source.Utilities.Timer import Timer
 
 
 class WorkerType(Enum):
@@ -14,7 +13,7 @@ class WorkerType(Enum):
 
 
 class AbstractWorker(Thread, ABC):
-    def __init__(self, shared_in_working: list[tuple[int, str]]):
+    def __init__(self, shared_in_working: list[tuple]):
         super().__init__()
 
         self.__is_running = True
@@ -42,6 +41,7 @@ class AbstractWorker(Thread, ABC):
                 self._timer.reset()
                 self._task = self._request_queue.pop(0)
                 self._solve_task()
+                self._finish_task()
 
             self.__task_event.clear()
 
@@ -58,6 +58,11 @@ class AbstractWorker(Thread, ABC):
     def submit_task(self, packet: CoapPacket):
         self._request_queue.append(packet)
         self.__task_event.set()
+
+    @logger
+    def _finish_task(self):
+        in_working = (self._task.token, self._task.sender_ip_port)
+        self._shared_in_working.remove(in_working)
 
     @abstractmethod
     def _solve_task(self):
