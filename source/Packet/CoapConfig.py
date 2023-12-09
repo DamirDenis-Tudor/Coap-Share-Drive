@@ -30,6 +30,7 @@ class CoapCodeFormat(Enum):
     POST = (0, 2)
     PUT = (0, 3)
     DELETE = (0, 4)
+    FETCH = (0, 5)
 
     # Response Codes
     SUCCESS_CREATED = (2, 1)

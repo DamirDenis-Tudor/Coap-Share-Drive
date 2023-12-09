@@ -134,6 +134,7 @@ class CustomLogger:
             except Exception as e:
                 self.log(
                     f"{name} Function {func.__name__} encountered an exception: {e}", LogColor.RED)
+                raise e
 
         return wrapper
 

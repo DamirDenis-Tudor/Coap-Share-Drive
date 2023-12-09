@@ -1,8 +1,6 @@
 import json
 import os
 
-from source.Packet.Old_Packet.Config import PAYLOAD_LENGTH
-
 
 class Utilities:
     @staticmethod
@@ -28,10 +26,10 @@ class Utilities:
         return json.dumps(entities)
 
     @staticmethod
-    def split_file_on_packets(file_path: str):
+    def split_file_on_packets(file_path: str, block_size: int):
         with open(file_path, 'rb') as file:
             while True:
-                file_data = file.read(PAYLOAD_LENGTH)
+                file_data = file.read(block_size)
                 if not file_data:
                     break
                 yield file_data

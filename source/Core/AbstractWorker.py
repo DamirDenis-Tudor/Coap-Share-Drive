@@ -54,12 +54,12 @@ class AbstractWorker(Thread, ABC):
         self.__task_event.set()
         self.join()
 
-    @logger
+    #@logger
     def submit_task(self, packet: CoapPacket):
         self._request_queue.append(packet)
         self.__task_event.set()
 
-    @logger
+    #@logger
     def _finish_task(self):
         in_working = (self._task.token, self._task.sender_ip_port)
         self._shared_in_working.remove(in_working)
