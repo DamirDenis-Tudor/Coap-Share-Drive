@@ -163,3 +163,4 @@ class CoapContentFormat(Enum):
             if member.value == item:
                 return True
         return False
+
