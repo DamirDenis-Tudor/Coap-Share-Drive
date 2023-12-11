@@ -1,5 +1,9 @@
+from time import sleep
+
 from source.Packet.CoapConfig import CoapOptionDelta, CoapCodeFormat
+from source.Packet.CoapPacket import CoapPacket
 from source.Packet.CoapTemplates import CoapTemplates
+from source.Packet.CoapTransaction import CoapTransaction, CoapTransactionsPool
 from source.Resource.Resource import Resource
 from source.Utilities.Logger import logger
 from source.Utilities.Utilities import Utilities
@@ -11,22 +15,34 @@ class StorageResource(Resource):
 
     @logger
     def get(self, request):
+        sleep(5)
         if (request.options.get(CoapOptionDelta.LOCATION_PATH.value) and
                 request.options.get(CoapOptionDelta.BLOCK1.value)):
             path = self.get_path() + request.options[CoapOptionDelta.LOCATION_PATH.value]
 
-            block_op: bin = bin(request.options[CoapOptionDelta.BLOCK1.value])[-3:]
-            if block_op.__contains__('b'):
-                block_op = request.options[CoapOptionDelta.BLOCK1.value]
-            else:
-                block_op = int(block_op, 2)
+            block_fields = CoapPacket.decode_option_block(request.options[CoapOptionDelta.BLOCK1.value])
 
-            generator = Utilities.split_file_on_packets(path, 2 ** (block_op + 4))
+            total_packets = Utilities.get_total_packets(path, block_fields["BLOCK_SIZE"])
+            logger.log(total_packets)
+            generator = Utilities.split_file_on_packets(path, block_fields["BLOCK_SIZE"])
             if generator:
+                index = 1
                 for payload in generator:
-                    response = CoapTemplates.BYTES_RESPONSE.value()
+                    if CoapTransactionsPool().failed_transmission(request.token):
+                        logger.log("STOP GENERATING FAILED TRANSMISSION")
+                        break
+
+                    response = CoapTemplates.BYTES_RESPONSE.value_with(request.token, request.message_id + index)
+
                     response.payload = payload
-                    request.skt.sendto(response.encode(), request.sender_ip_port)
+                    response.skt = request.skt
+                    response.sender_ip_port = request.sender_ip_port
+                    response.options[CoapOptionDelta.BLOCK2.value] = (
+                        CoapPacket.encode_option_block(index-1, index != total_packets, block_fields["SZX"])
+                    )
+
+                    CoapTransaction(response, request.message_id)
+                    index += 1
             else:
                 pass
         else:

@@ -15,10 +15,49 @@ class CoapPacket:
     """
 
     @staticmethod
+    def decode_option_block(option) -> dict:
+        """
+        Decode an option block value into a dictionary of its components.
+
+        Args:
+        - option (int): The option block value to be decoded.
+
+        Returns:
+        - dict: A dictionary containing the decoded components - {'SZX': szx, 'M': m, 'NUM': num, 'BLOCK_SIZE': actual_block_size}.
+        """
+        # Extracting individual bits using bit masking and shifting
+        num = (option & 0b11110000) >> 4
+        m = (option & 0b00001000) >> 3
+        szx = option & 0b00000111
+
+        # Calculating the actual block size
+        actual_block_size = 2 ** (szx + 4)
+
+        return {'SZX': szx, 'M': m, 'NUM': num, 'BLOCK_SIZE': actual_block_size}
+
+    @staticmethod
+    def encode_option_block(num: int, m: int, szx: int) -> int:
+        """
+        Encode values of NUM, M, and SZX into an option block value.
+
+        Args:
+        - num (int): The value of NUM (four bits).
+        - m (int): The value of M (one bit).
+        - Szx (int): The value of SZX (three bits).
+
+        Returns:
+        - int: The resulting option block value.
+        """
+        # Combining values to create the option block
+        option = (num << 4) | (m << 3) | szx
+
+        return option
+
+    @staticmethod
     def _encode_option(option_value, delta_value) -> bytes:
         """
         Encode a CoAP option value and delta values/datatypes.
-        For the option values there are three encoding possibilities: int/str/bytes
+        For the option values, there are three encoding possibilities: int/str/bytes
 
         Based on the option delta/value length the format will use or not the extended field.
         - When option delta exceeds allowed value|12| there may be need of some adjustments:
@@ -85,7 +124,7 @@ class CoapPacket:
         """
         Interpret the value of a CoAP option based on the option delta.
         This method is useful because it classifies the format of the option value.
-        If you'll add new option be sure to handle its format interpretation here.
+        If you'll add a new option be sure to handle its format interpretation here.
 
         Args:
             delta: Delta value for the option.
@@ -233,7 +272,7 @@ class CoapPacket:
 
             option_value = coap_packet[options_start + 1:options_start + 1 + length]
 
-            options[delta + prev_option_delta] = CoapPacket._decode_option(delta, option_value)
+            options[delta + prev_option_delta] = CoapPacket._decode_option(delta + prev_option_delta, option_value)
 
             options_start += 1 + length
             prev_option_delta = delta + prev_option_delta
@@ -264,3 +303,4 @@ class CoapPacket:
                f"message_id={self.message_id}, " \
                f"options={self.options}, " \
                f"payload={self.payload})"
+

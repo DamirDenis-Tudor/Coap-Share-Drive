@@ -94,11 +94,31 @@ class CoapTemplates(Enum):
         payload=""
     )
 
+    FAILED_REQUEST = CoapPacket(
+        version=1,
+        message_type=CoapType.RST.value,
+        token=b"",
+        code=CoapCodeFormat.CLIENT_ENTITY_INCOMPLETE.value(),
+        message_id=0,
+        options={},
+        payload=""
+    )
+
     EMPTY_ACK = CoapPacket(
         version=1,
         message_type=CoapType.ACK.value,
         token=b"",
         code=CoapCodeFormat.EMPTY.value(),
+        message_id=0,
+        options={},
+        payload=""
+    )
+
+    SUCCESS_ACK = CoapPacket(
+        version=1,
+        message_type=CoapType.ACK.value,
+        token=b"",
+        code=CoapCodeFormat.SUCCESS_CONTENT.value(),
         message_id=0,
         options={},
         payload=""
@@ -112,7 +132,8 @@ class CoapTemplates(Enum):
         message_id=0,
         options={
             CoapOptionDelta.LOCATION_PATH.value: "",
-            CoapOptionDelta.CONTENT_FORMAT.value: CoapContentFormat.APPLICATION_OCTET_STREAM.value
+            CoapOptionDelta.CONTENT_FORMAT.value: CoapContentFormat.APPLICATION_OCTET_STREAM.value,
+            CoapOptionDelta.BLOCK2.value: 6,  # block size
         },
         payload=""
     )
@@ -120,5 +141,11 @@ class CoapTemplates(Enum):
     def __init__(self, coap_packet: CoapPacket):
         self.coap_packet = coap_packet
 
-    def value(self) -> CoapPacket:
+    def value_with(self, tkn, msg_id) -> CoapPacket:
+        request = copy(self.coap_packet)
+        request.token = tkn
+        request.message_id = msg_id
+        return request
+
+    def value(self):
         return copy(self.coap_packet)

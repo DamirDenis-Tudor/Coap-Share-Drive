@@ -1,3 +1,4 @@
+from source.Packet.CoapTransaction import CoapTransactionsPool
 from source.Utilities.Logger import logger
 from source.Core.AbstractWorker import AbstractWorker
 
@@ -8,6 +9,6 @@ class ClientWorker(AbstractWorker):
         self.name = f"ClientWorker[{self.name}]"
         self.__owner = owner
 
-    @logger
     def _solve_task(self):
         pass
+        #        logger.log(f"{self.name} Solving task: \n {self._task}")

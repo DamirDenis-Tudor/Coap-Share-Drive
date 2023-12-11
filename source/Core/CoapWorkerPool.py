@@ -1,3 +1,4 @@
+import random
 import threading
 from _socket import IPPROTO_UDP
 from abc import ABC
@@ -11,6 +12,7 @@ from source.Core.ServerWorker import ServerWorker
 from source.Packet.CoapConfig import CoapType, CoapCodeFormat, CoapOptionDelta
 from source.Packet.CoapTemplates import CoapTemplates
 from source.Packet.CoapTokenGen import CoapTokenGen
+from source.Packet.CoapTransaction import CoapTransactionsPool
 from source.Utilities.Logger import logger
 from threading import Event
 
@@ -52,16 +54,16 @@ class CoapWorkerPool(ABC):
 
         self.__is_running = True
 
-    #@logger
+    # @logger
     def add_background_thread(self, thread: threading.Thread):
         self.__background_threads.append(thread)
 
-    #@logger
+    @logger
     def add_task(self, task):
         self.__event_submit_packet.set()
         self.__to_be_solved.append(task)
 
-    #@logger
+    # @logger
     def _create_worker(self) -> AbstractWorker:
         chosen_worker = None
         if self.__worker_type == WorkerType.SERVER_WORKER:
@@ -77,7 +79,7 @@ class CoapWorkerPool(ABC):
 
         return chosen_worker
 
-    #@logger
+    # @logger
     def _choose_worker(self) -> AbstractWorker:
         available_workers = filter(lambda worker: worker.get_queue_size() < self.__max_queue_size, self.__workers)
         chosen_worker = min(available_workers, default=None, key=lambda x: x.get_queue_size())
@@ -112,13 +114,32 @@ class CoapWorkerPool(ABC):
             if not self.__is_running:
                 break
 
-            task = self.__to_be_solved.pop(0)
-            in_working = (task.token, task.sender_ip_port)
-            if in_working not in self._shared_in_working:
+            packet: CoapPacket = self.__to_be_solved.pop(0)
+            in_working = (packet.token, packet.sender_ip_port)
+            if (not CoapTransactionsPool().has_transaction(packet.token, packet.message_id) and
+                    in_working not in self._shared_in_working):
                 self._shared_in_working.append(in_working)
-                self._choose_worker().submit_task(task)
+                self._choose_worker().submit_task(packet)
+
+                # When a content response is received, the initial request may not have received the
+                # acknowledgment, but it's clear that the client/server got the request.
+                # The initial transaction related to the request must be finished.
+                if CoapCodeFormat.is_success(packet.code):
+                    if packet.options.get(CoapOptionDelta.BLOCK2.value):
+                        # now based on the block_id, message_id we can search for parent transaction
+                        # that waits for an ACk with the formula:<parent_t_msg_id=task.msg_id-block_id-1>
+                        block2 = packet.options.get(CoapOptionDelta.BLOCK2.value)
+                        block_id = CoapPacket.decode_option_block(block2)["NUM"]
+                        parent_msg_id = packet.message_id - block_id - 1
+                    else:
+                        # response may come in one piece with no block2 option
+                        parent_msg_id = packet.message_id - 1
+
+                    transaction = CoapTransactionsPool().get_transaction(packet.token, parent_msg_id)
+                    if transaction:
+                        transaction.finish_transaction()
             else:
-                logger.log(f"{self.name} Packet duplicated: \n {task.__repr__()}")
+                logger.log(f"{self.name} Packet duplicated: \n {packet.__repr__()}")
 
             self.__event_submit_packet.clear()
 
@@ -134,33 +155,44 @@ class CoapWorkerPool(ABC):
                 if active_socket:
                     data, address = self._socket.recvfrom(1152)
                     packet = CoapPacket.decode(data, address, self._socket)
-
-                    # verifying the integrity of packet
+                    # verifying the integrity of the packet
                     if CoapWorkerPool.__verify_format(packet):
 
-                        # packet is CON => EMPTY ACK
-                        if packet.message_type == CoapType.CON.value:
-                            empty_ack = CoapTemplates.EMPTY_ACK.value()
-                            empty_ack.token = packet.token
-                            self._socket.sendto(empty_ack.encode(), packet.sender_ip_port)
+                        match packet.message_type:
 
-                            packet.token = CoapTokenGen.get_token()
+                            case CoapType.CON.value:
+                                if CoapCodeFormat.is_method(packet.code):  # request -> EMPTY ACK & PROCES REQUEST
+                                    val = random.choice([1, 2])
+                                    logger.log(val)
+                                    if val == 0:
+                                        logger.log(f"Not ACK: -> {packet}")
+                                    else:
+                                        ack = CoapTemplates.EMPTY_ACK.value_with(packet.token, packet.message_id)
+                                        self._socket.sendto(ack.encode(), packet.sender_ip_port)
+                                    self.add_task(packet)
+                                else:  # content -> SUCCESS ACK
+                                    val = random.choice([1, 2,3, 4])
+                                    if val == 0:
+                                        logger.log(f"Not ACK: -> {packet}")
+                                    else:
+                                        ack = CoapTemplates.SUCCESS_ACK.value_with(packet.token, packet.message_id)
+                                        self._socket.sendto(ack.encode(), packet.sender_ip_port)
+                                        self.add_task(packet)
 
-                        if packet.message_type == CoapType.ACK.value:
-                            # add to transaction
-                            pass
-                        elif packet.message_type == CoapType.RST.value:
-                            # finsh transaction
-                            pass
+                            case CoapType.ACK.value:
+                                if CoapTransactionsPool().has_transaction(packet.token, packet.message_id):
+                                    CoapTransactionsPool().get_transaction(packet.token,
+                                                                           packet.message_id).finish_transaction()
 
-                        else:
-                            self.add_task(packet)
+                            case CoapType.RST.value:
+                                CoapTransactionsPool().finish_all_transactions(packet.token)
+
+                            case _:
+                                pass
                     else:
                         logger.log(f"{self.name} Invalid coap format: \n {packet.__repr__()}")
 
-                        invalid_format: CoapPacket = CoapTemplates.NON_COAP_FORMAT.value()
-                        invalid_format.message_id = packet.message_id
-                        invalid_format.token = packet.token
+                        invalid_format = CoapTemplates.NON_COAP_FORMAT.value_with(packet.token, packet.message_id)
                         invalid_format.code = CoapCodeFormat.SERVER_ERROR_INTERNAL_SERVER_ERROR.value()
 
                         self._socket.sendto(invalid_format.encode(), packet.sender_ip_port)

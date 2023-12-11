@@ -4,6 +4,8 @@ from source.Core.AbstractWorker import WorkerType
 from source.Core.CoapWorkerPool import CoapWorkerPool
 from source.Packet.CoapConfig import CoapOptionDelta
 from source.Packet.CoapTemplates import CoapTemplates
+from source.Packet.CoapTokenGen import CoapTokenGen
+from source.Packet.CoapTransaction import CoapTransaction
 from source.Utilities.Logger import logger
 from source.Packet.CoapPacket import CoapPacket
 
@@ -20,11 +22,14 @@ class CoapClient(CoapWorkerPool):
         while True:
             print("1 -> download\n2 -> upload\n3 -> rename/move\n4 -> delete\n5 -> sync")
             data = "1"
-
+            path = "/CoAPthon/coapthon.jpg"
+            # path = "/CoAPthon/coapping.py"
             if data == "1":
-                coap_message = CoapTemplates.DOWNLOAD.value()
-                coap_message.options[CoapOptionDelta.LOCATION_PATH.value] = "/CoAPthon/coapping.py"
+                coap_message = CoapTemplates.DOWNLOAD.value_with(CoapTokenGen.get_token(), 0)
+                coap_message.options[CoapOptionDelta.LOCATION_PATH.value] = path
                 coap_message.options[CoapOptionDelta.URI_PATH.value] = "share_drive"
+                coap_message.skt = self._socket
+                coap_message.sender_ip_port = ("127.0.0.2", int(5683))
             elif data == "2":
                 coap_message = CoapTemplates.UPLOAD.value()
             elif data == "3":
@@ -33,8 +38,7 @@ class CoapClient(CoapWorkerPool):
                 coap_message = CoapTemplates.DELETE.value()
             elif data == "5":
                 coap_message = CoapTemplates.SYNC.value()
-
-            self._socket.sendto(coap_message.encode(), ("127.0.0.2", int(5683)))
+            CoapTransaction(coap_message)
             break
 
 

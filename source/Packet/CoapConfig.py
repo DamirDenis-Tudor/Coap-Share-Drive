@@ -65,11 +65,28 @@ class CoapCodeFormat(Enum):
     def __repr__(self):
         return f"CoAPCodeFormat({self.message_type}, {self.code})"
 
-    def value(self):
+    def value(self) -> int:
         """
         Get the integer representation of the CoAP code.
         """
         return (self.message_type << 5) | self.code
+
+    @staticmethod
+    def is_method(code):
+        return (code == CoapCodeFormat.GET.value() or
+                code == CoapCodeFormat.PUT.value() or
+                code == CoapCodeFormat.POST.value() or
+                code == CoapCodeFormat.DELETE.value() or
+                code == CoapCodeFormat.FETCH.value())
+
+    @staticmethod
+    def is_success(code):
+        return (code == CoapCodeFormat.SUCCESS_CONTENT.value() or
+                code == CoapCodeFormat.SUCCESS_CHANGED.value() or
+                code == CoapCodeFormat.SUCCESS_VALID.value() or
+                code == CoapCodeFormat.SUCCESS_CREATED.value() or
+                code == CoapCodeFormat.SUCCESS_DELETED.value() or
+                code == CoapCodeFormat.SUCCESS_CONTINUE.value())
 
     @staticmethod
     def is_valid(item):
@@ -163,4 +180,3 @@ class CoapContentFormat(Enum):
             if member.value == item:
                 return True
         return False
-
