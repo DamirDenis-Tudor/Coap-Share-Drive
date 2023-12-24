@@ -1,202 +1,124 @@
-import sys
-from PyQt5.QtCore import QModelIndex, Qt, QAbstractItemModel
-from PyQt5.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QTreeView, QPushButton, QInputDialog,
-    QMessageBox, QFileDialog, QDialog, QLabel, QLineEdit
+from PySide6.QtCore import Qt, QSize
+from PySide6.QtGui import QStandardItem, QStandardItemModel
+from PySide6.QtWidgets import (
+    QTreeView,
+    QApplication,
+    QMainWindow,
+    QVBoxLayout,
+    QPushButton,
+    QLineEdit,
+    QFileDialog,
+    QMessageBox,
+    QWidget,
+    QDialog,
+    QLabel,
+    QVBoxLayout,
+    QFormLayout,
+    QHBoxLayout,
 )
 
 
-class FileItem:
-    def __init__(self, name, is_folder=False, parent=None):
-        self.name = name
-        self.is_folder = is_folder
-        self.children = []
-        self.parent = parent  # Add the parent attribute
-
-    def add_child(self, child):
-        child.parent = self
-        self.children.append(child)
-
-    def row(self):
-        if self.parent:
-            return self.parent.children.index(self)
-        return 0
-
-
-class RemoteFileSystemModel(QAbstractItemModel):
-    def __init__(self, root_items):
-        super().__init__()
-        self.root_items = root_items
-
-    def rowCount(self, parent=QModelIndex()):
-        if not parent.isValid():
-            return len(self.root_items)
-        parent_item = parent.internalPointer()
-        return len(parent_item.children) if parent_item else 0
-
-    def columnCount(self, parent=QModelIndex()):
-        return 1
-
-    def data(self, index, role):
-        if not index.isValid():
-            return None
-        item = index.internalPointer()
-        if role == Qt.DisplayRole:
-            return item.name
-        return None
-
-    def index(self, row, column, parent=QModelIndex()):
-        if not parent.isValid():
-            parent_item = self.root_items[row]
-        else:
-            parent_item = parent.internalPointer().children[row]
-
-        if parent_item:
-            return self.createIndex(row, column, parent_item)
-        else:
-            return QModelIndex()
-
-    def parent(self, index):
-        if not index.isValid():
-            return QModelIndex()
-        child_item = index.internalPointer()
-        parent_item = child_item.parent
-        if parent_item:
-            return self.createIndex(parent_item.row(), 0, parent_item)
-        else:
-            return QModelIndex()
-
-
-class UploadDialog(QDialog):
-    def __init__(self, parent=None):
-        super(UploadDialog, self).__init__(parent)
-
-        self.setWindowTitle("Upload Files")
-        self.setGeometry(200, 200, 400, 200)
-
-        self.file_list = QFileDialog.getOpenFileNames(self, 'Select Files to Upload')[0]
-        self.upload_button = QPushButton("Upload", self)
-        self.upload_button.clicked.connect(self.accept)
-
-        layout = QVBoxLayout(self)
-        layout.addWidget(self.upload_button)
-
-
-class RenameMoveDialog(QDialog):
-    def __init__(self, title, prompt, parent=None):
-        super(RenameMoveDialog, self).__init__(parent)
-
-        self.setWindowTitle(title)
-        self.setGeometry(200, 200, 400, 150)
-
-        self.prompt_label = QLabel(prompt, self)
-        self.name_input = QLineEdit(self)
-        self.ok_button = QPushButton("OK", self)
-        self.ok_button.clicked.connect(self.accept)
-
-        layout = QVBoxLayout(self)
-        layout.addWidget(self.prompt_label)
-        layout.addWidget(self.name_input)
-        layout.addWidget(self.ok_button)
-
-
-class FileManagerApp(QWidget):
-    def __init__(self, root_items):
+class ServerLoginDialog(QDialog):
+    def __init__(self):
         super().__init__()
 
-        self.file_tree_view = None
-        self.remote_file_system_model = RemoteFileSystemModel(root_items)
+        self.server_address_input = QLineEdit()
+        self.password_input = QLineEdit()
+        self.password_input.setEchoMode(QLineEdit.Password)
 
-        self.setWindowTitle('Remote File Manager')
-        self.setGeometry(100, 100, 800, 600)
+        self.init_ui()
 
-        self.file_tree_view = QTreeView()
-        self.file_tree_view.setModel(self.remote_file_system_model)
-
-        self.download_button = QPushButton('Download')
-        self.upload_button = QPushButton('Upload')
-        self.rename_button = QPushButton('Rename')
-        self.move_button = QPushButton('Move')
-        self.delete_button = QPushButton('Delete')
-
-        self.download_button.clicked.connect(self.download_handler)
-        self.upload_button.clicked.connect(self.show_upload_dialog)
-        self.rename_button.clicked.connect(self.show_rename_dialog)
-        self.move_button.clicked.connect(self.show_move_dialog)
-        self.delete_button.clicked.connect(self.delete_handler)
-
+    def init_ui(self):
         layout = QVBoxLayout()
-        layout.addWidget(self.file_tree_view)
-        layout.addWidget(self.download_button)
-        layout.addWidget(self.upload_button)
-        layout.addWidget(self.rename_button)
-        layout.addWidget(self.move_button)
-        layout.addWidget(self.delete_button)
+
+        form_layout = QFormLayout()
+        form_layout.addRow("Server Address:", self.server_address_input)
+        form_layout.addRow("Password:", self.password_input)
+
+        login_button = QPushButton("Login")
+        login_button.clicked.connect(self.accept)
+
+        layout.addLayout(form_layout)
+        layout.addWidget(login_button)
 
         self.setLayout(layout)
-
-    def download_handler(self):
-        selected_index = self.file_tree_view.currentIndex()
-        file_item = selected_index.internalPointer()
-        if file_item.is_folder:
-            return  # You may want to handle folder selection differently
-        # Perform download logic using file_item
-        print(f'Download: {file_item.name}')
-
-    def show_upload_dialog(self):
-        upload_dialog = UploadDialog(self)
-        if upload_dialog.exec_():
-            # Perform upload logic using upload_dialog.file_list
-            print("Upload: Selected Files:", upload_dialog.file_list)
-
-    def show_rename_dialog(self):
-        selected_index = self.file_tree_view.currentIndex()
-        file_item = selected_index.internalPointer()
-
-        rename_dialog = RenameMoveDialog("Rename", "Enter new name:", self)
-        rename_dialog.name_input.setText(file_item.name)
-
-        if rename_dialog.exec_():
-            new_name = rename_dialog.name_input.text()
-            # Update the file_item name with the new name
-            file_item.name = new_name
-            print(f'Rename: {file_item.name}')
-
-    def show_move_dialog(self):
-        selected_index = self.file_tree_view.currentIndex()
-        file_item = selected_index.internalPointer()
-
-        move_dialog = RenameMoveDialog("Move", "Enter new parent folder:", self)
-        move_dialog.name_input.setText(file_item.parent.name if file_item.parent else "")
-
-        if move_dialog.exec_():
-            new_parent = move_dialog.name_input.text()
-            # Perform move logic using file_item and new_parent
-            print(f'Move: {file_item.name} -> {new_parent}')
-
-    def delete_handler(self):
-        selected_index = self.file_tree_view.currentIndex()
-        file_item = selected_index.internalPointer()
-        reply = QMessageBox.question(self, 'Delete', f'Are you sure you want to delete {file_item.name}?',
-                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            # Perform delete logic using file_item
-            print(f'Delete: {file_item.name}')
+        self.setWindowTitle("Server Login")
+        self.setFixedSize(QSize(400, 300))  # Set the fixed size of the login window
 
 
-if __name__ == '__main__':
-    root_items = [
-        FileItem("Folder1", is_folder=True),
-        FileItem("File1.txt"),
-        FileItem("Folder2", is_folder=True),
-        FileItem("File2.txt")
-    ]
+class ShareDriveClientApp(QMainWindow):
+    def __init__(self):
+        super().__init__()
 
-    # Add child relationships
-    root_items[0].add_child(FileItem("Subfolder1", is_folder=True))
-    root_items[0].add_child(FileItem("File3.txt"))
+        self.init_ui()
 
-    app = QApplication(sys.argv)
-    window = FileManagerApp(root_items)
-    window.show()
-    sys.exit(app.exec_())
+    def init_ui(self):
+        self.login_dialog = ServerLoginDialog()
+        self.login_dialog.accepted.connect(self.show_file_system_page)
+
+    def show_file_system_page(self):
+        # Configuration of the main window
+        self.setWindowTitle("Share Drive Client")
+        self.setGeometry(100, 100, 1200, 600)
+
+        # Configuration of the tree views
+        self.server_tree_view = QTreeView()
+        self.server_tree_view.setHeaderHidden(True)
+
+        self.local_tree_view = QTreeView()
+        self.local_tree_view.setHeaderHidden(True)
+
+        # Configuration of buttons
+        self.connect_button = QPushButton("Connect to Server")
+
+        # Connection of signals to functions
+        self.connect_button.clicked.connect(self.show_login_page)
+
+        # Configuration of the layouts
+        layout = QVBoxLayout()
+
+        server_layout = QVBoxLayout()
+        server_layout.addWidget(self.server_tree_view)
+        server_layout.addWidget(self.connect_button)
+
+        local_layout = QVBoxLayout()
+        local_layout.addWidget(self.local_tree_view)
+
+        layout.addLayout(server_layout)
+        layout.addLayout(local_layout)
+
+        # Configuration of the central widget
+        central_widget = QWidget()
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
+
+        # Set the root items for the item models
+        self.server_root_item = QStandardItem("Server Root")
+        self.server_item_model = QStandardItemModel()
+        self.server_item_model.appendRow(self.server_root_item)
+        self.server_tree_view.setModel(self.server_item_model)
+
+        self.local_root_item = QStandardItem("Local Root")
+        self.local_item_model = QStandardItemModel()
+        self.local_item_model.appendRow(self.local_root_item)
+        self.local_tree_view.setModel(self.local_item_model)
+
+        # Show the main window
+        self.show()
+
+
+def main():
+    app = QApplication([])
+
+    # Display the login dialog first
+    login_dialog = ServerLoginDialog()
+    result = login_dialog.exec_()
+
+    # If login is successful, show the file system page
+    if result == QDialog.Accepted:
+        window = ShareDriveClientApp()
+        app.exec()
+
+
+if __name__ == "__main__":
+    main()

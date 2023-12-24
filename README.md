@@ -1,12 +1,12 @@
-# 1. Sequence digram
+# 1. Sequence diagram + Packet format
 
-![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/95768d98-59f4-4a45-a3ad-1f644f7d76a8)
+![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/f8f02abe-3f49-40bb-9ce2-04ad12cd9f60)
 
+# 2. Class Diagram
 
-# 2. CoAP Message Format
+![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/3deef87f-eaa9-4102-b07d-13d494e6d335)
 
-
-![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/b6f86146-729d-46bf-b293-2bc29e7bbeae)
+# 3. CoAP Message Format
 
 ### Client IP
 - Field wrapped when the packet is recieved.

@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class CoAPType(Enum):
+class CoapType(Enum):
     """
     Enum class representing CoAP message types.
     """
@@ -10,8 +10,15 @@ class CoAPType(Enum):
     ACK = 2
     RST = 3
 
+    @staticmethod
+    def is_valid(item):
+        for member in CoapType:
+            if member.value == item:
+                return True
+        return False
 
-class CoAPCodeFormat(Enum):
+
+class CoapCodeFormat(Enum):
     """
     Enum class representing CoAP code format possibilities.
 
@@ -23,6 +30,7 @@ class CoAPCodeFormat(Enum):
     POST = (0, 2)
     PUT = (0, 3)
     DELETE = (0, 4)
+    FETCH = (0, 5)
 
     # Response Codes
     SUCCESS_CREATED = (2, 1)
@@ -57,39 +65,105 @@ class CoAPCodeFormat(Enum):
     def __repr__(self):
         return f"CoAPCodeFormat({self.message_type}, {self.code})"
 
-    def value(self):
+    def value(self) -> int:
         """
         Get the integer representation of the CoAP code.
         """
         return (self.message_type << 5) | self.code
 
+    @staticmethod
+    def is_method(code):
+        return (code == CoapCodeFormat.GET.value() or
+                code == CoapCodeFormat.PUT.value() or
+                code == CoapCodeFormat.POST.value() or
+                code == CoapCodeFormat.DELETE.value() or
+                code == CoapCodeFormat.FETCH.value())
 
-class CoAPOptionDelta(Enum):
+    @staticmethod
+    def is_success(code):
+        return (code == CoapCodeFormat.SUCCESS_CONTENT.value() or
+                code == CoapCodeFormat.SUCCESS_CHANGED.value() or
+                code == CoapCodeFormat.SUCCESS_VALID.value() or
+                code == CoapCodeFormat.SUCCESS_CREATED.value() or
+                code == CoapCodeFormat.SUCCESS_DELETED.value() or
+                code == CoapCodeFormat.SUCCESS_CONTINUE.value())
+
+    @staticmethod
+    def is_valid(item):
+        for member in CoapCodeFormat:
+            if member.value() == item:
+                return True
+        return False
+
+    @staticmethod
+    def get_field_name(value):
+        for member in CoapCodeFormat:
+            print(member.value())
+            if member.value == value:
+                return member
+        return None
+
+
+class CoapOptionDelta(Enum):
     """
     Enum class representing CoAP option deltas.
+
+    BLOCK FORMAT 23|27:
+        - SZX -> size of the block with the length of 3 bits: 0 for 2**4 ... 6 for 2**10
+                actual block size will be 2**(SZX + 4) ;
+        - M   -> 1 bit flag the specifies if there will be a next block
+        - NUM -> the current block number being requested/received
+
+        BLOCK1 -> REQUEST ex. GET
+        BLOCK2 -> RESPONSE ex. PUT
+
     """
     IF_MATCH = 1
+
     URI_HOST = 3
+
     ETAG = 4
+
     IF_NONE_MATCH = 5
+
     URI_PORT = 7
+
     LOCATION_PATH = 8
+
     URI_PATH = 11
+
     CONTENT_FORMAT = 12
+
     MAX_AGE = 14
+
     URI_QUERY = 15
+
     ACCEPT = 17
+
     LOCATION_QUERY = 20
+
     BLOCK2 = 23
     BLOCK1 = 27
+
     PROXY_URI = 35
     PROXY_SCHEME = 39
+
     SIZE1 = 60
-    MOVE_TO = 101
-    RENAME = 102
+
+    @staticmethod
+    def is_valid(items: dict):
+        if len(items) > 0:
+            for item in items:
+                valid_item = False
+                for member in CoapOptionDelta:
+                    if member.value == item:
+                        valid_item = True
+                if not valid_item:
+                    return False
+        return True
 
 
-class CoAPContentFormat(Enum):
+class CoapContentFormat(Enum):
     """
     Enum class representing CoAP content formats.
     """
@@ -99,3 +173,10 @@ class CoAPContentFormat(Enum):
     APPLICATION_OCTET_STREAM = 42
     APPLICATION_EXI = 47
     APPLICATION_JSON = 50
+
+    @staticmethod
+    def is_valid(item):
+        for member in CoapContentFormat:
+            if member.value == item:
+                return True
+        return False
