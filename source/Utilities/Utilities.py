@@ -35,12 +35,6 @@ class Utilities:
                 yield file_data
 
     @staticmethod
-    def get_packet_at_index(file_path, packet_index):
-        with open(file_path, 'rb') as file:
-            file.seek((packet_index - 1) * PAYLOAD_LENGTH)
-            return file.read(PAYLOAD_LENGTH)
-
-    @staticmethod
     def get_total_packets(file_path: str, block_size: int):
         file_size = os.path.getsize(file_path)
         total_packets = (file_size + block_size - 1) // block_size

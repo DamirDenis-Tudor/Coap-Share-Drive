@@ -9,6 +9,7 @@ class Timer:
     def reset(self):
         """Start the timer."""
         self.__start_time = time.time()
+        return self
 
     def stop(self):
         """Stop the timer."""

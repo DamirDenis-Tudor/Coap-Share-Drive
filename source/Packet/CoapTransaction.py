@@ -1,134 +1,96 @@
 import threading
-from asyncio import sleep
-from socket import socket
-from threading import Thread
+
 from source.Packet.CoapPacket import CoapPacket
 from source.Packet.CoapTemplates import CoapTemplates
 from source.Utilities.Logger import logger
 from source.Utilities.Timer import Timer
 
 
-class CoapTransaction(Thread):
-    """
-    This class wraps a CON-type request and ensures that the request is received. An intersection must be made to
-    update the transaction status (see: finish_transaction(), force_finish_transaction()).
-
-    A separate task for CoAP transaction integrity is started, and this can lead to a self finish_transaction.
-    Moreover, transactions are related by the token of the request; it's obvious that when a transaction fails, all
-    related transactions must also fail.
-
-    In a simplified manner, a CoapTransaction can be seen as a Subscriber, and CoapTransactionsPool can be seen
-    as an Observer.
-    """
-
-    # for more details about those parameters visit: https://datatracker.ietf.org/doc/html/rfc7252#autoid-20
+class CoapTransaction:
     ACK_TIMEOUT = 2
     ACK_RANDOM_FACTOR = 1.5
-    MAX_RETRANSMIT = 4
+    MAX_RETRANSMIT = 2
     MAX_RETRANSMISSION_SPAN = (ACK_TIMEOUT * ((2 ** MAX_RETRANSMIT) - 1) * ACK_RANDOM_FACTOR)
     MAX_RETRANSMISSION_WAIT = (ACK_TIMEOUT * ((2 ** (MAX_RETRANSMIT + 1)) - 1) * ACK_RANDOM_FACTOR)
 
-    def __init__(self, request: CoapPacket, initial_request_msg_id: int = None):
-        """
-        Constructor for CoapTransaction.
+    NO_ACTION = 0
+    RETRANSMISSION = 1
+    FAILED_TRANSACTION = 2
 
-        Args:
-        - request: CoapPacket - The CoAP packet representing the request.
-        """
-        # Store the CoAP request packet and initialize transaction flags
-        super().__init__()
-        self._request: CoapPacket = request
-        self.__initial_request_msg_id = initial_request_msg_id
+    RETRANSMISSIONS= 0
 
-        self.__transaction_over = False
-        self.__transaction_failed = False
+    def __init__(self, request: CoapPacket, parent_msg_id: int):
+        self.__request: CoapPacket = request
+        self.__parent_msg_id = parent_msg_id
+        self.__timer: Timer = Timer().reset()
+        self.__ack_timeout = CoapTransaction.ACK_TIMEOUT
+        self.__transmit_time_span = 0
+        self.__retransmission_counter = 0
 
-        self.__skt: socket = self._request.skt
-        self.__dest = self._request.sender_ip_port
+    @property
+    def request(self) -> CoapPacket:
+        return self.__request
 
-        # Notify the TransactionsPool about the start of a new transaction
-        CoapTransactionsPool().notify(self, "APPEND")
+    @property
+    def parent_msg_id(self) -> int:
+        return self.__parent_msg_id
 
-        # send the initial request
-        self.__skt.sendto(self._request.encode(), self.__dest)
+    @property
+    def timer(self) -> Timer:
+        return self.__timer
 
-    def run(self):
-        """
-        Internal method to handle the timer and retransmission logic for the transaction.
-        """
+    @property
+    def ack_timeout(self) -> float:
+        return self.__ack_timeout
 
-        # Initialize timer and timeout variables
-        timer = Timer()
-        timer.reset()
+    @ack_timeout.setter
+    def ack_timeout(self, value: float):
+        self.__ack_timeout = value
 
-        ack_timeout = CoapTransaction.ACK_TIMEOUT
-        transmit_time_span = 0
-        retransmission_counter = 0
+    @property
+    def transmit_time_span(self) -> int:
+        return self.__transmit_time_span
 
-        while not self.__transaction_over:
-            # Check if the timer has exceeded the ACK timeout
-            if timer.elapsed_time() > ack_timeout:
-                transmit_time_span += timer.elapsed_time()
+    @transmit_time_span.setter
+    def transmit_time_span(self, value: int):
+        self.__transmit_time_span = value
 
-                # Update ACK timeout and retransmission counter
-                ack_timeout *= 2
-                retransmission_counter += 1
+    @property
+    def retransmission_counter(self) -> int:
+        return self.__retransmission_counter
 
-                # Check if retransmission limits are reached
-                if (transmit_time_span > CoapTransaction.MAX_RETRANSMISSION_SPAN or
-                        retransmission_counter > CoapTransaction.MAX_RETRANSMIT):
-                    self.force_finish_transaction()
-                    return
+    @retransmission_counter.setter
+    def retransmission_counter(self, value: int):
+        self.__retransmission_counter = value
 
-                # Reset the timer for the next iteration
-                timer.reset()
+    def run_transaction(self) -> int:
+        if self.__timer.elapsed_time() > self.__ack_timeout:
+            self.__transmit_time_span += self.__timer.elapsed_time()
 
-                # Resend the request
-                self.__skt.sendto(self._request.encode(), self.__dest)
-        self.finish_transaction()
+            # Update ACK timeout and retransmission counter
+            self.__ack_timeout *= 2
+            self.__retransmission_counter += 1
 
-    def finish_transaction(self):
-        """
-        Finish the transaction gracefully.
-        """
-        self.__transaction_over = True
-        CoapTransactionsPool().notify(self, "REMOVE")
+            # Reset the timer for the next iteration
+            self.__timer.reset()
 
-    def force_finish_transaction(self):
-        """
-        Forcefully finish the transaction.
-        """
-        self.__transaction_over = True
-        self.__transaction_failed = True
+            # Check if retransmission limits are reached
+            if (self.__transmit_time_span > CoapTransaction.MAX_RETRANSMISSION_SPAN or
+                    self.__retransmission_counter > CoapTransaction.MAX_RETRANSMIT):
+                reset_response = CoapTemplates.FAILED_REQUEST.value_with(self.request.token, self.parent_msg_id)
+                self.__request.skt.sendto(reset_response.encode(), self.__request.sender_ip_port)
+                return CoapTransaction.FAILED_TRANSACTION
 
-        CoapTransactionsPool().notify(self, "REMOVE_ALL")
+            CoapTransaction.RETRANSMISSIONS += 1
+            logger.log(f"RETRANSMISSIONS {CoapTransaction.RETRANSMISSIONS}")
+            self.__request.skt.sendto(self.__request.encode(), self.__request.sender_ip_port)
 
-    def stop(self):
-        self.__transaction_over = True
+            return CoapTransaction.RETRANSMISSION
 
-    def is_transaction_finished(self):
-        """
-        Check if the transaction is finished.
-
-        Returns:
-        - bool - True if the transaction is finished, False otherwise.
-        """
-        return self.__transaction_over
-
-    def get_request(self) -> CoapPacket:
-        """
-        Get the associated CoapPacket request.
-
-        Returns:
-        - CoapPacket - The CoAP packet representing the request.
-        """
-        return self._request
-
-    def get_initial_request_msg_id(self):
-        return self.__initial_request_msg_id
+        return CoapTransaction.NO_ACTION
 
 
-class CoapTransactionsPool:
+class CoapTransactionPool:
     """
     Singleton class the work as an Observer to all transactions, more than that it gives flexibility
     to access a certain transactions in any context.
@@ -143,84 +105,65 @@ class CoapTransactionsPool:
         Returns:
         - TransactionsPool - The instance of TransactionsPool.
         """
-        with cls._lock:
-            # Create a single instance of TransactionsPool if it doesn't exist
-            if cls._instance is None:
-                cls._instance = super().__new__(cls)
-            return cls._instance
+        # with cls._lock:
+        # Create a single instance of TransactionsPool if it doesn't exist
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
     def __init__(self):
-        """
-        Initialize TransactionsPool attributes only once.
-        """
         with self._lock:
-            # Initialize TransactionsPool attributes only if not previously initialized
             if not hasattr(self, 'initialized'):
-                self.__transactions: list[CoapTransaction] = []
-                self.__failed_transactions: list[int] = []
+                self.__transaction_dict: dict[tuple[bytes, int], CoapTransaction] = {}
+                self.__new_added: dict[tuple[bytes, int], CoapTransaction] = {}
+                self.__finished_transactions: dict[tuple[bytes, int]] = {}
+                self.__failed_transactions: list[bytes] = []
+                self.__is_running = True
                 self.initialized = True
 
-    def failed_transmission(self, token):
-        return token in self.__failed_transactions
+    def add_transaction(self, transaction: CoapTransaction):
+        key = (transaction.request.token, transaction.request.message_id)
 
-    def has_transaction(self, token, message_id):
-        for transaction in self.__transactions:
-            if (transaction.get_request().token == token and
-                    transaction.get_request().message_id == message_id):
-                return True
+        # An acknowledgment for a packet might be received earlier
+        # than the moment when the transaction is added to the pool.
+        if key not in self.__finished_transactions:
+            self.__transaction_dict[key] = transaction
+            # logger.log(f"Added transaction: {key[1]}")
+            self.__new_added[key] = transaction
+
+    def finish_transaction(self, token: bytes, msg_id: int):
+        # todo add ip too
+        key = (token, msg_id)
+        self.__finished_transactions[key] = msg_id
+
+        # there is no need to delete the transaction if it has already finished.
+        if key in self.__transaction_dict:
+            del self.__transaction_dict[key]
+
+    def finish_all_transactions(self, token: bytes):
+        self.__failed_transactions.append(token)
+        self.__transaction_dict = {(t.request.token, t.request.message_id):
+                                       t for t in self.__transaction_dict.values() if not (t.request.token == token)}
+
+    def transaction_previously_failed(self, token: bytes):
+        if token in self.__failed_transactions:
+            self.__failed_transactions.remove(token)
+            return True
         return False
 
-    def get_transaction(self, token, message_id):
-        for transaction in self.__transactions:
-            if transaction.get_request().token == token and transaction.get_request().message_id == message_id:
-                return transaction
-        return None
+    def solve_transactions(self):
+        if len(self.__transaction_dict) > 0:
+            keys_copy = list(self.__transaction_dict.keys())
 
-    def finish_all_transactions(self, token):
-        for transaction in self.__transactions:
-            if transaction.get_request().token == token:
-                transaction.finish_transaction()
+            for key in keys_copy:
+                if key[0] not in self.__failed_transactions and key not in self.__finished_transactions:
+                    match self.__transaction_dict[key].run_transaction():
+                        case CoapTransaction.FAILED_TRANSACTION:
+                            self.finish_all_transactions(key[0])
+                        case _:
+                            pass
 
-    def notify(self, transaction, msg):
-        """
-        Notify the TransactionsPool about transactions.
+            self.__finished_transactions.clear()
 
-        Args:
-        - transaction: CoapTransaction - The CoAP transaction.
-        - msg: str - The notification message (e.g., "APPEND", "REMOVE", "REMOVE_ALL").
-        """
-        with self._lock:
-            # Print the notification message for debugging purposes
-            if msg == "APPEND":
-                if not self.failed_transmission(transaction.get_request().token):
-                    self.__transactions.append(transaction)
-                    transaction.start()
-            elif msg == "REMOVE":
-                if transaction in self.__transactions:
-                    self.__transactions.remove(transaction)
-            elif msg == "REMOVE_ALL":
-                # add to failed transactions
-                self.__failed_transactions.append(transaction.get_request().token)
-                logger.log(f"REMOVE_ALL {self.__failed_transactions}")
-
-                # Remove all transactions related to the specified transaction
-                related_transaction = [x for x in self.__transactions
-                                       if x.get_request().token == transaction.get_request().token]
-                for trt in related_transaction:
-                    if not trt.is_transaction_finished():
-                        trt.stop()
-
-                # Update the TransactionsPool with the remaining transactions
-                self.__transactions = [x for x in self.__transactions
-                                       if x.get_request().token != transaction.get_request().token]
-
-                # send a reset message
-                failed_global_transaction = CoapTemplates.FAILED_REQUEST.value_with(
-                    transaction.get_request().token,
-                    transaction.get_initial_request_msg_id()
-                )
-
-                transaction.get_request().skt.sendto(
-                    failed_global_transaction.encode(),
-                    transaction.get_request().sender_ip_port
-                )
+    def get_number_of_transactions(self):
+        return len(self.__transaction_dict)

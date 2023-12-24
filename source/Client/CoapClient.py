@@ -5,7 +5,7 @@ from source.Core.CoapWorkerPool import CoapWorkerPool
 from source.Packet.CoapConfig import CoapOptionDelta
 from source.Packet.CoapTemplates import CoapTemplates
 from source.Packet.CoapTokenGen import CoapTokenGen
-from source.Packet.CoapTransaction import CoapTransaction
+from source.Packet.CoapTransaction import CoapTransactionPool, CoapTransaction
 from source.Utilities.Logger import logger
 from source.Packet.CoapPacket import CoapPacket
 
@@ -22,7 +22,7 @@ class CoapClient(CoapWorkerPool):
         while True:
             print("1 -> download\n2 -> upload\n3 -> rename/move\n4 -> delete\n5 -> sync")
             data = "1"
-            path = "/CoAPthon/coapthon.jpg"
+            path = "/CoAPthon/files.zip"
             # path = "/CoAPthon/coapping.py"
             if data == "1":
                 coap_message = CoapTemplates.DOWNLOAD.value_with(CoapTokenGen.get_token(), 0)
@@ -38,11 +38,15 @@ class CoapClient(CoapWorkerPool):
                 coap_message = CoapTemplates.DELETE.value()
             elif data == "5":
                 coap_message = CoapTemplates.SYNC.value()
-            CoapTransaction(coap_message)
+
+            coap_message.skt.sendto(coap_message.encode(), coap_message.sender_ip_port)
+            CoapTransactionPool().add_transaction(CoapTransaction(coap_message, 0))
+
             break
+
+    def get_resource(self, path):
+        pass
 
 
 if __name__ == "__main__":
-    th = threading.Thread(target=CoapClient("127.0.0.3", int(5683)).listen)
-    th.start()
-    th.join()
+    CoapClient("127.0.0.4", int(5683)).listen()

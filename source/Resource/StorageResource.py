@@ -1,9 +1,9 @@
 from time import sleep
 
-from source.Packet.CoapConfig import CoapOptionDelta, CoapCodeFormat
+from source.Packet.CoapConfig import CoapOptionDelta
 from source.Packet.CoapPacket import CoapPacket
 from source.Packet.CoapTemplates import CoapTemplates
-from source.Packet.CoapTransaction import CoapTransaction, CoapTransactionsPool
+from source.Packet.CoapTransaction import CoapTransactionPool, CoapTransaction
 from source.Resource.Resource import Resource
 from source.Utilities.Logger import logger
 from source.Utilities.Utilities import Utilities
@@ -23,13 +23,16 @@ class StorageResource(Resource):
             block_fields = CoapPacket.decode_option_block(request.options[CoapOptionDelta.BLOCK1.value])
 
             total_packets = Utilities.get_total_packets(path, block_fields["BLOCK_SIZE"])
-            logger.log(total_packets)
             generator = Utilities.split_file_on_packets(path, block_fields["BLOCK_SIZE"])
+
+            logger.log(f"Total packets: {total_packets}")
             if generator:
+
                 index = 1
                 for payload in generator:
-                    if CoapTransactionsPool().failed_transmission(request.token):
+                    if CoapTransactionPool().transaction_previously_failed(request.token):
                         logger.log("STOP GENERATING FAILED TRANSMISSION")
+                        generator.close()
                         break
 
                     response = CoapTemplates.BYTES_RESPONSE.value_with(request.token, request.message_id + index)
@@ -38,11 +41,17 @@ class StorageResource(Resource):
                     response.skt = request.skt
                     response.sender_ip_port = request.sender_ip_port
                     response.options[CoapOptionDelta.BLOCK2.value] = (
-                        CoapPacket.encode_option_block(index-1, index != total_packets, block_fields["SZX"])
+                        CoapPacket.encode_option_block(index - 1, index != total_packets, block_fields["SZX"])
                     )
 
-                    CoapTransaction(response, request.message_id)
-                    index += 1
+                    while CoapTransactionPool().get_number_of_transactions() >= total_packets / 100:
+                        pass
+
+                    if index <= total_packets:
+                        # send the initial request
+                        response.skt.sendto(response.encode(), response.sender_ip_port)
+                        CoapTransactionPool().add_transaction(CoapTransaction(response, request.message_id))
+                        index += 1
             else:
                 pass
         else:

@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from enum import Enum, auto
+from multiprocessing import Queue
 from threading import Thread, Event
 
-from source.Utilities.Logger import logger
 from source.Packet.CoapPacket import CoapPacket
 from source.Utilities.Timer import Timer
 
@@ -13,56 +13,50 @@ class WorkerType(Enum):
 
 
 class AbstractWorker(Thread, ABC):
-    def __init__(self, shared_in_working: list[tuple]):
+    def __init__(self, owner):
         super().__init__()
 
         self.__is_running = True
-        self.__task_event = Event()
 
-        self._request_queue: list[CoapPacket] = []
-        self._shared_in_working = shared_in_working
+        self._request_queue = Queue()
         self._task = CoapPacket()
+        self._owner = owner
 
         self._timer = Timer()
         self._timer.reset()
 
     def get_queue_size(self):
-        return len(self._request_queue)
+        return self._request_queue.qsize()
 
     def get_idle_time(self):
         return self._timer.elapsed_time()
 
-    @logger
+    # @logger
     def run(self):
         while self.__is_running:
-            self.__task_event.wait()
 
-            while self._request_queue:
-                self._timer.reset()
-                self._task = self._request_queue.pop(0)
-                self._solve_task()
-                self._finish_task()
-
-            self.__task_event.clear()
-
+            self._task = self._request_queue.get()
+            self._timer.reset()
             if not self.__is_running:
                 break
 
-    @logger
+            self._solve_task()
+            self._finish_task()
+
+    # @logger
     def stop(self):
         self.__is_running = False
-        self.__task_event.set()
+        self.submit_task(CoapPacket())
         self.join()
 
-    #@logger
+    # @logger
     def submit_task(self, packet: CoapPacket):
-        self._request_queue.append(packet)
-        self.__task_event.set()
+        self._request_queue.put(packet)
 
-    #@logger
+    # @logger
     def _finish_task(self):
-        in_working = (self._task.token, self._task.sender_ip_port)
-        self._shared_in_working.remove(in_working)
+        in_working = (self._task.token, self._task.message_id, self._task.sender_ip_port)
+        self._owner.remove_short_term_work(in_working)
 
     @abstractmethod
     def _solve_task(self):

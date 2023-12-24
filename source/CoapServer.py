@@ -1,3 +1,5 @@
+import multiprocessing
+
 from source.Core.AbstractWorker import WorkerType
 from source.Core.CoapWorkerPool import CoapWorkerPool
 from source.Resource.Resource import Resource

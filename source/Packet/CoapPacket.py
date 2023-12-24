@@ -124,7 +124,7 @@ class CoapPacket:
         """
         Interpret the value of a CoAP option based on the option delta.
         This method is useful because it classifies the format of the option value.
-        If you'll add a new option be sure to handle its format interpretation here.
+        If you'll add a new option, be sure to handle its format interpretation here.
 
         Args:
             delta: Delta value for the option.
@@ -148,7 +148,7 @@ class CoapPacket:
         elif delta == CoapOptionDelta.CONTENT_FORMAT.value:
             return int.from_bytes(option_value, byteorder='big')
 
-    def __init__(self, version=1, message_type=0, token=b"", code=0,
+    def __init__(self, version=0, message_type=0, token=b"", code=0,
                  message_id=0, options=None, payload: object = None, sender_ip_port: tuple = (), skt: socket = None):
         """
         Initializes a CoAPPacket instance with the provided parameters.
@@ -162,6 +162,11 @@ class CoapPacket:
             options (dict): Dictionary of CoAP options.
             payload (bytes): Payload of the CoAP packet.
         """
+        if version == 0:
+            self.is_dummy = True
+        else:
+            self.is_dummy = False
+
         self.version = version
         self.message_type = message_type
         self.token = token

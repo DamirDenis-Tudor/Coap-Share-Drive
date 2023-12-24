@@ -7,10 +7,9 @@ from source.Core.AbstractWorker import AbstractWorker
 
 
 class ServerWorker(AbstractWorker):
-    def __init__(self, shared_in_working: list[tuple], owner):
-        super().__init__(shared_in_working)
+    def __init__(self, owner):
+        super().__init__(owner)
         self.name = f"ServerWorker[{self.name}]"
-        self._owner = owner
 
     @logger
     def _solve_task(self):

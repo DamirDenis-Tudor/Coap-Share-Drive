@@ -114,6 +114,16 @@ class CoapTemplates(Enum):
         payload=""
     )
 
+    DUMMY_PACKET = CoapPacket(
+        version=0,
+        message_type=0,
+        token=b"",
+        code=0,
+        message_id=0,
+        options={},
+        payload=""
+    )
+
     SUCCESS_ACK = CoapPacket(
         version=1,
         message_type=CoapType.ACK.value,
@@ -147,5 +157,5 @@ class CoapTemplates(Enum):
         request.message_id = msg_id
         return request
 
-    def value(self):
+    def value(self) -> CoapPacket:
         return copy(self.coap_packet)
