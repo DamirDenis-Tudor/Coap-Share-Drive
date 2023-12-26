@@ -3,10 +3,11 @@ from time import sleep
 from source.Packet.CoapConfig import CoapOptionDelta
 from source.Packet.CoapPacket import CoapPacket
 from source.Packet.CoapTemplates import CoapTemplates
-from source.Packet.CoapTransaction import CoapTransactionPool, CoapTransaction
+from source.Transaction.CoapTransaction import CoapTransaction
 from source.Resource.Resource import Resource
+from source.Transaction.CoapTransactionPool import CoapTransactionPool
 from source.Utilities.Logger import logger
-from source.Utilities.Utilities import Utilities
+from source.File.FileUtilities import FileUtilities
 
 
 class StorageResource(Resource):
@@ -22,8 +23,8 @@ class StorageResource(Resource):
 
             block_fields = CoapPacket.decode_option_block(request.options[CoapOptionDelta.BLOCK1.value])
 
-            total_packets = Utilities.get_total_packets(path, block_fields["BLOCK_SIZE"])
-            generator = Utilities.split_file_on_packets(path, block_fields["BLOCK_SIZE"])
+            total_packets = FileUtilities.get_total_packets(path, block_fields["BLOCK_SIZE"])
+            generator = FileUtilities.split_file_on_packets(path, block_fields["BLOCK_SIZE"])
 
             logger.log(f"Total packets: {total_packets}")
             if generator:
@@ -41,17 +42,29 @@ class StorageResource(Resource):
                     response.skt = request.skt
                     response.sender_ip_port = request.sender_ip_port
                     response.options[CoapOptionDelta.BLOCK2.value] = (
-                        CoapPacket.encode_option_block(index - 1, index != total_packets, block_fields["SZX"])
+                        CoapPacket.encode_option_block(index - 1, int(index != total_packets), block_fields["SZX"])
                     )
 
-                    while CoapTransactionPool().get_number_of_transactions() >= total_packets / 100:
+                    """
+                        it's important to limit the number of active transactions, the reasons are described bellow: 
+                        - a large number of transactions can reach at "Illegal block fragments." 
+                          when the default port is used, the packets are malformed; 
+                        - RAM reason: a large number of transactions will reach to a large number of bytes
+                          stored at runtime;
+                        - after numerous tests i reached to the conclusion that 50 is the optimal number
+                          for both speed and consistency transfer;
+                    """
+                    while CoapTransactionPool().get_number_of_transactions() >= 25:
                         pass
 
-                    if index <= total_packets:
-                        # send the initial request
-                        response.skt.sendto(response.encode(), response.sender_ip_port)
-                        CoapTransactionPool().add_transaction(CoapTransaction(response, request.message_id))
-                        index += 1
+                    if index == total_packets:
+                        while CoapTransactionPool().get_number_of_transactions() != 0:
+                            pass
+
+                    response.skt.sendto(response.encode(), response.sender_ip_port)
+                    CoapTransactionPool().add_transaction(CoapTransaction(response, request.message_id))
+
+                    index += 1
             else:
                 pass
         else:

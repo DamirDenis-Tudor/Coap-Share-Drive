@@ -26,14 +26,14 @@ class CoapPacket:
         - dict: A dictionary containing the decoded components - {'SZX': szx, 'M': m, 'NUM': num, 'BLOCK_SIZE': actual_block_size}.
         """
         # Extracting individual bits using bit masking and shifting
-        num = (option & 0b11110000) >> 4
-        m = (option & 0b00001000) >> 3
-        szx = option & 0b00000111
+        num = option >> 4
+        m = (option >> 3) & 0b1
+        szx = option & 0b111
 
         # Calculating the actual block size
         actual_block_size = 2 ** (szx + 4)
 
-        return {'SZX': szx, 'M': m, 'NUM': num, 'BLOCK_SIZE': actual_block_size}
+        return {'NUM': num, 'M': m, 'SZX': szx, 'BLOCK_SIZE': actual_block_size}
 
     @staticmethod
     def encode_option_block(num: int, m: int, szx: int) -> int:
@@ -306,6 +306,4 @@ class CoapPacket:
                f"token={self.token}, " \
                f"code={self.code}, " \
                f"message_id={self.message_id}, " \
-               f"options={self.options}, " \
-               f"payload={self.payload})"
-
+               f"options={self.options}, "

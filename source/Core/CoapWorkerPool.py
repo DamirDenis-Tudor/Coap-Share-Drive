@@ -1,22 +1,19 @@
 import abc
-import random
 import threading
+
 from _socket import IPPROTO_UDP
 from abc import ABC
-from enum import Enum, auto
 from queue import Queue
 from select import select
 from socket import socket, AF_INET, SOCK_DGRAM
-
 from source.Core.AbstractWorker import AbstractWorker, WorkerType
 from source.Core.ClientWorker import ClientWorker
 from source.Core.ServerWorker import ServerWorker
 from source.Packet.CoapConfig import CoapType, CoapCodeFormat, CoapOptionDelta
 from source.Packet.CoapTemplates import CoapTemplates
-from source.Packet.CoapTransaction import CoapTransactionPool
+from source.Transaction.CoapTransactionPool import CoapTransactionPool
 from source.Utilities.Logger import logger
 from threading import Event
-
 from source.Packet.CoapPacket import CoapPacket
 
 
@@ -58,10 +55,9 @@ class CoapWorkerPool(ABC):
             threading.Thread(target=self.coap_format_filter),
             threading.Thread(target=self.deduplication_filter),
         ]
+        self.__is_running = True
 
         CoapTransactionPool()
-
-        self.__is_running = True
 
     def add_background_thread(self, thread: threading.Thread):
         self.__background_threads.append(thread)
@@ -128,7 +124,9 @@ class CoapWorkerPool(ABC):
                 # acknowledgment, but it's clear that the client/server got the request.
                 # The initial transaction related to the request must be finished.
                 if CoapCodeFormat.is_success(packet.code):
+
                     if packet.options.get(CoapOptionDelta.BLOCK2.value):
+
                         # if a block 2/1 option is included, it's clear that this is
                         # a long-term request, and it must be handled properly
                         self._long_term_shared_work.append(work)
@@ -138,6 +136,7 @@ class CoapWorkerPool(ABC):
                         block2 = packet.options.get(CoapOptionDelta.BLOCK2.value)
                         block_id = CoapPacket.decode_option_block(block2)["NUM"]
                         parent_msg_id = packet.message_id - block_id - 1
+
                     else:
                         # response may come in one piece with no block2 option
                         parent_msg_id = packet.message_id - 1
@@ -173,6 +172,7 @@ class CoapWorkerPool(ABC):
                                 self.__valid_coap_packets.put(packet)
 
                         case CoapType.ACK.value:
+                            # logger.log(f"Received ACK : {packet}")
                             CoapTransactionPool().finish_transaction(packet.token, packet.message_id)
 
                         case CoapType.RST.value:

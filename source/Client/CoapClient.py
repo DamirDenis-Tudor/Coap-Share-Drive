@@ -5,7 +5,8 @@ from source.Core.CoapWorkerPool import CoapWorkerPool
 from source.Packet.CoapConfig import CoapOptionDelta
 from source.Packet.CoapTemplates import CoapTemplates
 from source.Packet.CoapTokenGen import CoapTokenGen
-from source.Packet.CoapTransaction import CoapTransactionPool, CoapTransaction
+from source.Transaction.CoapTransaction import CoapTransaction
+from source.Transaction.CoapTransactionPool import CoapTransactionPool
 from source.Utilities.Logger import logger
 from source.Packet.CoapPacket import CoapPacket
 
@@ -23,7 +24,7 @@ class CoapClient(CoapWorkerPool):
             print("1 -> download\n2 -> upload\n3 -> rename/move\n4 -> delete\n5 -> sync")
             data = "1"
             path = "/CoAPthon/files.zip"
-            # path = "/CoAPthon/coapping.py"
+            #path = "/CoAPthon/coapping.py"
             if data == "1":
                 coap_message = CoapTemplates.DOWNLOAD.value_with(CoapTokenGen.get_token(), 0)
                 coap_message.options[CoapOptionDelta.LOCATION_PATH.value] = path
@@ -49,4 +50,4 @@ class CoapClient(CoapWorkerPool):
 
 
 if __name__ == "__main__":
-    CoapClient("127.0.0.4", int(5683)).listen()
+    CoapClient("127.0.0.7", int(5683)).listen()
