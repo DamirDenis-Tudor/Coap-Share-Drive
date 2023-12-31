@@ -37,7 +37,7 @@ class AbstractWorker(Thread, ABC):
     # @logger
     def run(self):
         while self.__is_running:
-            task = self._request_queue.get()
+            task:CoapPacket = self._request_queue.get()
             if not self.__is_running:
                 break
 
@@ -45,11 +45,9 @@ class AbstractWorker(Thread, ABC):
 
             self._solve_task(task)
 
-            self._owner.remove_short_term_work((
-                task.token,
-                task.message_id,
-                task.sender_ip_port
-            ))
+            self._owner.remove_short_term_work(
+                task.short_term_work_id()
+            )
 
     # @logger
     def stop(self):

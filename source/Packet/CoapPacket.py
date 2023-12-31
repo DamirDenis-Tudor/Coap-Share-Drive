@@ -174,9 +174,43 @@ class CoapPacket:
         self.code = code
         self.message_id = message_id
         self.options = options or {}
-        self.payload = payload or b""
+        self.__payload = payload or b""
         self.sender_ip_port = sender_ip_port
         self.skt = skt
+
+    @property
+    def payload(self):
+        return self.__payload
+
+    @payload.setter
+    def payload(self, value: float):
+        self.__payload = value
+
+    def get_block_id(self) -> int | None:
+        if CoapOptionDelta.BLOCK1.value in self.options:
+            return None # todo
+        elif CoapOptionDelta.BLOCK2.value in self.options:
+            return CoapPacket.decode_option_block(self.options[CoapOptionDelta.BLOCK2.value])["NUM"]
+        else:
+            return None
+
+    def has_option_block(self):
+        return CoapOptionDelta.BLOCK1.value in self.options or CoapOptionDelta.BLOCK2.value in self.options
+
+    def short_term_work_id(self, message_id_extension=None) -> tuple:
+        if message_id_extension:
+            return self.sender_ip_port, self.token, self.message_id, message_id_extension
+        return self.sender_ip_port, self.token, self.message_id
+
+    def long_term_work_id(self) -> tuple:
+        block_id = self.get_block_id()
+        if block_id:
+            return self.short_term_work_id(), block_id
+        else:
+            return self.short_term_work_id()
+
+    def general_work_id(self) -> tuple:
+        return self.sender_ip_port, self.token
 
     def encode(self) -> bytes:
         """

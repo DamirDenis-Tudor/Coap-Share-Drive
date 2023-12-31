@@ -31,10 +31,7 @@ class ServerWorker(AbstractWorker):
                             resource.get(task)
                             self._heavy_work = False
 
-                            retransmissions = CoapTransactionPool().get_number_of_retransmissions(
-                                task.sender_ip_port,
-                                task.token
-                            )
+                            retransmissions = CoapTransactionPool().get_number_of_retransmissions(task)
                             logger.log(f"<{task.sender_ip_port}->{task.token}> Retransmissions : {retransmissions}")
                     elif task.code == CoapCodeFormat.POST.value():
                         resource.post(task)

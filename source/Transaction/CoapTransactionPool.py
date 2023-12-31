@@ -41,16 +41,16 @@ class CoapTransactionPool:
 
                 self.__is_running = True
 
-                self.__finished_transactions: dict[tuple[tuple, bytes, int]] = {}
+                self.__finished_transactions: dict[tuple] = {}
                 self.__failed_transactions: dict[tuple] = {}
-                self.__transaction_dict: dict[tuple[tuple, bytes, int], CoapTransaction] = {}
+                self.__transaction_dict: dict[tuple, CoapTransaction] = {}
                 self.__retransmissions: dict = {}
 
     def handle_congestions(self, packet: CoapPacket, last_packet: bool):
-        if self.transaction_previously_failed(packet.sender_ip_port, packet.token):
+        if self.transaction_previously_failed(packet):
             return CoapTransactionPool.FAIL_TO_ADD
 
-        while len(self.__transaction_dict) >= 10000:
+        while len(self.__transaction_dict) >= 100:
             pass
 
         if last_packet:
@@ -64,11 +64,7 @@ class CoapTransactionPool:
         # make the initial request
         transaction.request.skt.sendto(transaction.request.encode(), transaction.request.sender_ip_port)
 
-        key = (
-            transaction.request.sender_ip_port,
-            transaction.request.token,
-            transaction.request.message_id
-        )
+        key = packet.short_term_work_id(packet.get_block_id())
 
         # An acknowledgment for a packet might be received earlier
         # than the moment when the transaction is added to the pool.
@@ -104,22 +100,27 @@ class CoapTransactionPool:
 
                 self.__finished_transactions.clear()
 
-    def finish_transaction(self, server_ip_port: tuple, token: bytes, msg_id: int):
-        key = (server_ip_port, token, msg_id)
-        self.__finished_transactions[key] = msg_id
+    def finish_transaction(self, packet: CoapPacket):
+        if packet.payload == b'':
+            key = packet.short_term_work_id()
+        else:
+            key = packet.short_term_work_id(int(packet.payload))
+
+        self.__finished_transactions[key] = time.time()
 
         # there is no need to delete the transaction if it has already finished.
         if key in self.__transaction_dict:
             del self.__transaction_dict[key]
 
-    def transaction_previously_failed(self, server_ip_port: tuple, token: bytes):
-        key = (token, server_ip_port)
+    def transaction_previously_failed(self, packet: CoapPacket):
+        key = packet.general_work_id()
         if key in self.__failed_transactions:
             self.__failed_transactions.pop(key)
             return True
         return False
 
-    def get_number_of_retransmissions(self, server_ip_port: tuple, token: bytes):
-        if (server_ip_port, token) in self.__retransmissions:
-            return self.__retransmissions[(server_ip_port, token)]
+    def get_number_of_retransmissions(self, packet: CoapPacket):
+        general_id = packet.general_work_id()
+        if general_id in self.__retransmissions:
+            return self.__retransmissions[general_id]
         return 0

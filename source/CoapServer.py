@@ -2,13 +2,14 @@ import multiprocessing
 
 from source.Core.AbstractWorker import WorkerType
 from source.Core.CoapWorkerPool import CoapWorkerPool
+from source.Core.ServerWorker import ServerWorker
 from source.Resource.Resource import Resource
 from source.Resource.StorageResource import StorageResource
 
 
 class CoapServer(CoapWorkerPool):
     def __init__(self, ip_address, port):
-        super().__init__(WorkerType.SERVER_WORKER, ip_address, port)
+        super().__init__(ServerWorker, ip_address, port)
         self.__resources: list[Resource] = []
 
     def search_resources(self):
@@ -28,6 +29,6 @@ class CoapServer(CoapWorkerPool):
 
 
 if __name__ == '__main__':
-    server = CoapServer('127.0.0.1', int(5683))
+    server = CoapServer('127.0.0.2', int(5683))
     server.add_resource(StorageResource("share_drive"))
     server.listen()

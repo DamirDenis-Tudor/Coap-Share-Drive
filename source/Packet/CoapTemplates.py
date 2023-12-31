@@ -130,7 +130,9 @@ class CoapTemplates(Enum):
         token=b"",
         code=CoapCodeFormat.SUCCESS_CONTENT.value(),
         message_id=0,
-        options={},
+        options={
+            CoapOptionDelta.CONTENT_FORMAT.value: CoapContentFormat.TEXT_PLAIN_UTF8.value,
+        },
         payload=""
     )
 
