@@ -1,5 +1,6 @@
 from source.Packet.CoapPacket import CoapPacket
 from source.Packet.CoapTemplates import CoapTemplates
+from source.Utilities.Logger import logger
 from source.Utilities.Timer import Timer
 
 
@@ -72,10 +73,10 @@ class CoapTransaction:
             # Check if retransmission limits are reached
             if (self.__transmit_time_span > CoapTransaction.MAX_RETRANSMISSION_SPAN or
                     self.__retransmission_counter > CoapTransaction.MAX_RETRANSMIT):
-
-                reset_response = CoapTemplates.FAILED_REQUEST.value_with(self.request.token, self.parent_msg_id)
+                reset_response = CoapTemplates.FAILED_REQUEST.value_with(self.__request.token, self.parent_msg_id)
                 self.__request.skt.sendto(reset_response.encode(), self.__request.sender_ip_port)
 
+                logger.log(f"Transaction failed: {self.__request}")
                 return CoapTransaction.FAILED_TRANSACTION
 
             self.__request.skt.sendto(self.__request.encode(), self.__request.sender_ip_port)

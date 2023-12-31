@@ -28,6 +28,6 @@ class CoapServer(CoapWorkerPool):
 
 
 if __name__ == '__main__':
-    server = CoapServer('127.0.0.2', int(5683))
+    server = CoapServer('127.0.0.1', int(5683))
     server.add_resource(StorageResource("share_drive"))
     server.listen()

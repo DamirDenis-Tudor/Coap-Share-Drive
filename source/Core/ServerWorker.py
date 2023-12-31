@@ -2,8 +2,11 @@ from time import sleep
 
 from source.Packet.CoapConfig import CoapOptionDelta, CoapCodeFormat
 from source.Resource.StorageResource import StorageResource
+from source.Transaction.CoapTransaction import CoapTransaction
+from source.Transaction.CoapTransactionPool import CoapTransactionPool
 from source.Utilities.Logger import logger
 from source.Core.AbstractWorker import AbstractWorker
+from source.Utilities.Timer import Timer
 
 
 class ServerWorker(AbstractWorker):
@@ -12,8 +15,7 @@ class ServerWorker(AbstractWorker):
         self.name = f"ServerWorker[{self.name}]"
 
     @logger
-    def _solve_task(self):
-        task = self._task
+    def _solve_task(self, task):
 
         if CoapCodeFormat.is_method(task.code):  # request
             """
@@ -24,7 +26,16 @@ class ServerWorker(AbstractWorker):
                 resource = self._owner.get_resource(task.options[CoapOptionDelta.URI_PATH.value])
                 if resource:
                     if task.code == CoapCodeFormat.GET.value():
-                        resource.get(task)
+                        with Timer("<{task.sender_ip_port}->{task.token}> get_request"):
+                            self._heavy_work = True
+                            resource.get(task)
+                            self._heavy_work = False
+
+                            retransmissions = CoapTransactionPool().get_number_of_retransmissions(
+                                task.sender_ip_port,
+                                task.token
+                            )
+                            logger.log(f"<{task.sender_ip_port}->{task.token}> Retransmissions : {retransmissions}")
                     elif task.code == CoapCodeFormat.POST.value():
                         resource.post(task)
                     elif task.code == CoapCodeFormat.PUT.value():

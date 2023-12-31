@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from socket import socket
 
 from source.Packet.CoapConfig import CoapOptionDelta, CoapContentFormat
@@ -301,9 +302,13 @@ class CoapPacket:
         Returns:
             str: String representation of the CoAPPacket object.
         """
+        readable_options = deepcopy(self.options)
+        for option in readable_options.keys():
+            if option == CoapOptionDelta.BLOCK2.value or option == CoapOptionDelta.BLOCK1.value:
+                readable_options[option] = CoapPacket.decode_option_block(readable_options[option])
         return f"CoAPPacket(version={self.version}, " \
                f"message_type={self.message_type}, " \
                f"token={self.token}, " \
                f"code={self.code}, " \
                f"message_id={self.message_id}, " \
-               f"options={self.options}, "
+               f"options={readable_options}, "

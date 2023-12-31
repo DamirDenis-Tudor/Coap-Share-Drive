@@ -154,7 +154,7 @@ class CoapTemplates(Enum):
     def value_with(self, tkn, msg_id) -> CoapPacket:
         request = deepcopy(self.coap_packet)
         request.token = tkn
-        request.message_id = msg_id
+        request.message_id = msg_id % 65536
         return request
 
     def value(self) -> CoapPacket:

@@ -1,9 +1,19 @@
+import random
 import threading
+import time
+from _socket import IPPROTO_UDP
+from socket import socket, AF_INET, SOCK_DGRAM
 
+from source.Packet.CoapPacket import CoapPacket
 from source.Transaction.CoapTransaction import CoapTransaction
+from source.Utilities.Logger import logger
+from source.Utilities.Timer import Timer
 
 
 class CoapTransactionPool:
+    SUCCESSFULLY_ADDED = 1
+    FAIL_TO_ADD = 2
+
     """
     Singleton class the work as an Observer to all transactions, more than that it gives flexibility
     to access a certain transactions in any context.
@@ -27,14 +37,38 @@ class CoapTransactionPool:
     def __init__(self):
         with self._lock:
             if not hasattr(self, 'initialized'):
-                self.__transaction_dict: dict[tuple[bytes, int], CoapTransaction] = {}
-                self.__finished_transactions: dict[tuple[bytes, int]] = {}
-                self.__failed_transactions: list[bytes] = []
-                self.__is_running = True
                 self.initialized = True
 
-    def add_transaction(self, transaction: CoapTransaction):
-        key = (transaction.request.token, transaction.request.message_id)
+                self.__is_running = True
+
+                self.__finished_transactions: dict[tuple[tuple, bytes, int]] = {}
+                self.__failed_transactions: dict[tuple] = {}
+                self.__transaction_dict: dict[tuple[tuple, bytes, int], CoapTransaction] = {}
+                self.__retransmissions: dict = {}
+
+    def handle_congestions(self, packet: CoapPacket, last_packet: bool):
+        if self.transaction_previously_failed(packet.sender_ip_port, packet.token):
+            return CoapTransactionPool.FAIL_TO_ADD
+
+        while len(self.__transaction_dict) >= 10000:
+            pass
+
+        if last_packet:
+            while len(self.__transaction_dict) != 0:
+                pass
+
+        return CoapTransactionPool.SUCCESSFULLY_ADDED
+
+    def add_transaction(self, packet: CoapPacket, parent_msg_id=None):
+        transaction = CoapTransaction(packet, parent_msg_id)
+        # make the initial request
+        transaction.request.skt.sendto(transaction.request.encode(), transaction.request.sender_ip_port)
+
+        key = (
+            transaction.request.sender_ip_port,
+            transaction.request.token,
+            transaction.request.message_id
+        )
 
         # An acknowledgment for a packet might be received earlier
         # than the moment when the transaction is added to the pool.
@@ -42,40 +76,50 @@ class CoapTransactionPool:
             self.__transaction_dict[key] = transaction
 
     def solve_transactions(self):
-        if len(self.__transaction_dict) > 0:
-            keys_copy = list(self.__transaction_dict.keys())
+        with Timer():
+            if len(self.__transaction_dict) > 0:
+                keys_copy = list(self.__transaction_dict.keys())
 
-            for key in keys_copy:
-                if key[0] not in self.__failed_transactions and key not in self.__finished_transactions:
-                    match self.__transaction_dict[key].run_transaction():
-                        case CoapTransaction.FAILED_TRANSACTION:
-                            token = key[0]
-                            self.__failed_transactions.append(token)
-                            self.__transaction_dict = {
-                                (t.request.token, t.request.message_id):
-                                    t for t in self.__transaction_dict.values()
-                                if not (t.request.token == token)
-                            }
-                            break
-                        case _:
-                            pass
+                for key in keys_copy:
+                    if ((key[0], key[1]) not in self.__failed_transactions and
+                            key not in self.__finished_transactions):
 
-            self.__finished_transactions.clear()
+                        match self.__transaction_dict[key].run_transaction():
+                            case CoapTransaction.FAILED_TRANSACTION:
+                                self.__failed_transactions[(key[0], key[1])] = time.time()
 
-    def finish_transaction(self, token: bytes, msg_id: int):
-        # todo add ip too
-        key = (token, msg_id)
+                                self.__transaction_dict = {
+                                    (t.request.sender_ip_port, t.request.token, t.request.message_id): t
+                                    for t in self.__transaction_dict.values() if
+                                    t.request.token != key[1] and t.request.sender_ip_port != key[0]
+                                }
+                                break
+
+                            case CoapTransaction.RETRANSMISSION:
+                                identifier = (key[0], key[1])
+                                if identifier not in self.__retransmissions:
+                                    self.__retransmissions[identifier] = 1
+                                else:
+                                    self.__retransmissions[identifier] += 1
+
+                self.__finished_transactions.clear()
+
+    def finish_transaction(self, server_ip_port: tuple, token: bytes, msg_id: int):
+        key = (server_ip_port, token, msg_id)
         self.__finished_transactions[key] = msg_id
 
         # there is no need to delete the transaction if it has already finished.
         if key in self.__transaction_dict:
             del self.__transaction_dict[key]
 
-    def transaction_previously_failed(self, token: bytes):
-        if token in self.__failed_transactions:
-            self.__failed_transactions.remove(token)
+    def transaction_previously_failed(self, server_ip_port: tuple, token: bytes):
+        key = (token, server_ip_port)
+        if key in self.__failed_transactions:
+            self.__failed_transactions.pop(key)
             return True
         return False
 
-    def get_number_of_transactions(self):
-        return len(self.__transaction_dict)
+    def get_number_of_retransmissions(self, server_ip_port: tuple, token: bytes):
+        if (server_ip_port, token) in self.__retransmissions:
+            return self.__retransmissions[(server_ip_port, token)]
+        return 0
