@@ -32,10 +32,10 @@ class CoapWorkerPool(ABC):
 
         return True
 
-    def __init__(self, worker_type: WorkerType, ip_address: str, port: int):
+    def __init__(self, worker_class: type, ip_address: str, port: int):
 
-        self.name = f"WorkerPoll[{worker_type}]"
-        self.__worker_type = worker_type
+        self.name = f"WorkerPoll[{worker_class}]"
+        self.__worker_class = worker_class
 
         self._short_term_shared_work = {}
         self._long_term_shared_work = {}
@@ -79,14 +79,10 @@ class CoapWorkerPool(ABC):
 
     @logger
     def _create_worker(self) -> AbstractWorker:
-        chosen_worker = None
-        if self.__worker_type == WorkerType.SERVER_WORKER:
-            chosen_worker = ServerWorker(self)
-        elif self.__worker_type == WorkerType.CLIENT_WORKER:
-            chosen_worker = ClientWorker(self)
+        chosen_worker = self.__worker_class(self)
+        chosen_worker.start()
 
         self.__workers.append(chosen_worker)
-        chosen_worker.start()
 
         return chosen_worker
 
@@ -126,27 +122,23 @@ class CoapWorkerPool(ABC):
     @logger
     def deduplication_filter(self):
         while self.__is_running:
-            packet = self.__valid_coap_packets.get()
+            packet: CoapPacket = self.__valid_coap_packets.get()
 
-            with Timer():
+            with (Timer()):
 
-                work = (packet.token, packet.message_id, packet.sender_ip_port)
+                work = packet.short_term_work_id()
 
                 long_term_work = None
                 # When a content response is received, the initial request may not have received the
                 # acknowledgment, but it's clear that the client/server got the request.
                 # The initial transaction related to the request must be finished.
-                if CoapCodeFormat.is_success(packet.code) and packet.options.get(CoapOptionDelta.BLOCK2.value):
+                if CoapCodeFormat.is_success(packet.code) and packet.has_option_block():
                     # if a block 2/1 option is included, it's clear that this is
                     # a long-term request, and it must be handled properly
-                    block = CoapPacket.decode_option_block(
-                        packet.options[CoapOptionDelta.BLOCK2.value]
-                    )
+                    long_term_work = packet.long_term_work_id()
 
-                    long_term_work = (work, block["NUM"])
-
-                if (work not in self._short_term_shared_work and
-                        long_term_work not in self._long_term_shared_work):
+                if (work not in self._short_term_shared_work
+                        and long_term_work not in self._long_term_shared_work):
 
                     self._choose_worker().submit_task(packet)
 
@@ -175,16 +167,13 @@ class CoapWorkerPool(ABC):
                                 ack = CoapTemplates.EMPTY_ACK.value_with(packet.token, packet.message_id)
                             else:  # content -> SUCCESS ACK
                                 ack = CoapTemplates.SUCCESS_ACK.value_with(packet.token, packet.message_id)
+                                ack.payload = str(packet.get_block_id()).encode('utf-8')
                             self._socket.sendto(ack.encode(), packet.sender_ip_port)
 
                             self.__valid_coap_packets.put(packet)
 
                     case CoapType.ACK.value:
-                        CoapTransactionPool().finish_transaction(
-                            packet.sender_ip_port,
-                            packet.token,
-                            packet.message_id
-                        )
+                        CoapTransactionPool().finish_transaction(packet)
 
                     case CoapType.RST.value:
                         logger.log("Failed")
@@ -218,10 +207,6 @@ class CoapWorkerPool(ABC):
             except KeyboardInterrupt as e:
 
                 self.__is_running = False
-
-                # Wake up threads to finish their tasks
-                # self.__received_packets.put((CoapTemplates.DUMMY_PACKET.value().encode(), None))
-                # self.__valid_coap_packets.put((CoapTemplates.DUMMY_PACKET.value().encode(), None))
                 self.__event_check_idle.set()
 
         for worker in self.__workers:

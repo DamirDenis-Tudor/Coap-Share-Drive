@@ -1,6 +1,7 @@
 import threading
 
 from source.Core.AbstractWorker import WorkerType
+from source.Core.ClientWorker import ClientWorker
 from source.Core.CoapWorkerPool import CoapWorkerPool
 from source.Packet.CoapConfig import CoapOptionDelta
 from source.Packet.CoapTemplates import CoapTemplates
@@ -13,7 +14,7 @@ from source.Packet.CoapPacket import CoapPacket
 
 class CoapClient(CoapWorkerPool):
     def __init__(self, ip_address, port):
-        super().__init__(WorkerType.CLIENT_WORKER, ip_address, port)
+        super().__init__(ClientWorker, ip_address, port)
 
         self.add_background_thread(threading.Thread(target=self.run_ui))
 
@@ -24,13 +25,13 @@ class CoapClient(CoapWorkerPool):
             print("1 -> download\n2 -> upload\n3 -> rename/move\n4 -> delete\n5 -> sync")
             data = "1"
             path = "/CoAPthon/test.zip"
-            #path = "/CoAPthon/coapping.py"
+            # path = "/CoAPthon/coapping.py"
             if data == "1":
                 coap_message = CoapTemplates.DOWNLOAD.value_with(CoapTokenGen.get_token(), 0)
                 coap_message.options[CoapOptionDelta.LOCATION_PATH.value] = path
                 coap_message.options[CoapOptionDelta.URI_PATH.value] = "share_drive"
                 coap_message.skt = self._socket
-                coap_message.sender_ip_port = ("127.0.0.1", int(5683))
+                coap_message.sender_ip_port = ("127.0.0.2", int(5683))
             elif data == "2":
                 coap_message = CoapTemplates.UPLOAD.value()
             elif data == "3":
@@ -49,4 +50,4 @@ class CoapClient(CoapWorkerPool):
 
 
 if __name__ == "__main__":
-    CoapClient("127.0.0.1", int(5687)).listen()
+    CoapClient("127.0.0.2", int(5687)).listen()
