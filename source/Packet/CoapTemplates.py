@@ -1,4 +1,4 @@
-from copy import copy
+from copy import deepcopy
 from enum import Enum
 
 from source.Packet.CoapConfig import CoapType, CoapCodeFormat, CoapContentFormat, CoapOptionDelta
@@ -152,10 +152,10 @@ class CoapTemplates(Enum):
         self.coap_packet = coap_packet
 
     def value_with(self, tkn, msg_id) -> CoapPacket:
-        request = copy(self.coap_packet)
+        request = deepcopy(self.coap_packet)
         request.token = tkn
-        request.message_id = msg_id
+        request.message_id = msg_id % 65536
         return request
 
     def value(self) -> CoapPacket:
-        return copy(self.coap_packet)
+        return deepcopy(self.coap_packet)

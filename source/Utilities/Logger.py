@@ -101,13 +101,14 @@ class CustomLogger:
         """
         current_time = datetime.datetime.now().strftime("%H:%M:%S")
         log_message = f"{current_time} - {message}"
-        if self.destination == LogDestination.CONSOLE:
-            if color is not None:
-                log_message = f"{color.value}{log_message}{LogColor.RESET.value}"
-            print(log_message)
-        elif self.destination == LogDestination.FILE:
-            with open(self.log_file, 'a') as log_file:
-                log_file.write(log_message + "\n")
+        with CustomLogger._lock:
+            if self.destination == LogDestination.CONSOLE:
+                if color is not None:
+                    log_message = f"{color.value}{log_message}{LogColor.RESET.value}"
+                print(log_message)
+            elif self.destination == LogDestination.FILE:
+                with open(self.log_file, 'a') as log_file:
+                    log_file.write(log_message + "\n")
 
     def __call__(self, func) -> object:
         """

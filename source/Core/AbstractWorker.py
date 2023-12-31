@@ -4,6 +4,8 @@ from multiprocessing import Queue
 from threading import Thread, Event
 
 from source.Packet.CoapPacket import CoapPacket
+from source.Utilities.CustomQueue import CustomQueue
+from source.Utilities.Logger import logger
 from source.Utilities.Timer import Timer
 
 
@@ -18,15 +20,16 @@ class AbstractWorker(Thread, ABC):
 
         self.__is_running = True
 
-        self._request_queue = Queue()
+        self._request_queue = CustomQueue()
         self._task = CoapPacket()
         self._owner = owner
+        self._heavy_work = False
 
         self._timer = Timer()
         self._timer.reset()
 
     def get_queue_size(self):
-        return self._request_queue.qsize()
+        return self._request_queue.size()
 
     def get_idle_time(self):
         return self._timer.elapsed_time()
@@ -34,14 +37,19 @@ class AbstractWorker(Thread, ABC):
     # @logger
     def run(self):
         while self.__is_running:
-
-            self._task = self._request_queue.get()
-            self._timer.reset()
+            task = self._request_queue.get()
             if not self.__is_running:
                 break
 
-            self._solve_task()
-            self._finish_task()
+            self._timer.reset()
+
+            self._solve_task(task)
+
+            self._owner.remove_short_term_work((
+                task.token,
+                task.message_id,
+                task.sender_ip_port
+            ))
 
     # @logger
     def stop(self):
@@ -53,11 +61,9 @@ class AbstractWorker(Thread, ABC):
     def submit_task(self, packet: CoapPacket):
         self._request_queue.put(packet)
 
-    # @logger
-    def _finish_task(self):
-        in_working = (self._task.token, self._task.message_id, self._task.sender_ip_port)
-        self._owner.remove_short_term_work(in_working)
+    def is_heavily_loaded(self):
+        return self._heavy_work
 
     @abstractmethod
-    def _solve_task(self):
+    def _solve_task(self, task: CoapPacket):
         pass

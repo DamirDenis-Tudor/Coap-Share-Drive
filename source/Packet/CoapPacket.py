@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from socket import socket
 
 from source.Packet.CoapConfig import CoapOptionDelta, CoapContentFormat
@@ -26,14 +27,14 @@ class CoapPacket:
         - dict: A dictionary containing the decoded components - {'SZX': szx, 'M': m, 'NUM': num, 'BLOCK_SIZE': actual_block_size}.
         """
         # Extracting individual bits using bit masking and shifting
-        num = (option & 0b11110000) >> 4
-        m = (option & 0b00001000) >> 3
-        szx = option & 0b00000111
+        num = option >> 4
+        m = (option >> 3) & 0b1
+        szx = option & 0b111
 
         # Calculating the actual block size
         actual_block_size = 2 ** (szx + 4)
 
-        return {'SZX': szx, 'M': m, 'NUM': num, 'BLOCK_SIZE': actual_block_size}
+        return {'NUM': num, 'M': m, 'SZX': szx, 'BLOCK_SIZE': actual_block_size}
 
     @staticmethod
     def encode_option_block(num: int, m: int, szx: int) -> int:
@@ -301,11 +302,13 @@ class CoapPacket:
         Returns:
             str: String representation of the CoAPPacket object.
         """
+        readable_options = deepcopy(self.options)
+        for option in readable_options.keys():
+            if option == CoapOptionDelta.BLOCK2.value or option == CoapOptionDelta.BLOCK1.value:
+                readable_options[option] = CoapPacket.decode_option_block(readable_options[option])
         return f"CoAPPacket(version={self.version}, " \
                f"message_type={self.message_type}, " \
                f"token={self.token}, " \
                f"code={self.code}, " \
                f"message_id={self.message_id}, " \
-               f"options={self.options}, " \
-               f"payload={self.payload})"
-
+               f"options={readable_options}, "

@@ -1,10 +1,22 @@
 import time
 
+from source.Utilities.Logger import logger
+
 
 class Timer:
-    def __init__(self):
+    def __init__(self, operation_name: str = None):
         self.__start_time = None
         self.__end_time = None
+        self.__operation_name = operation_name
+
+    def __enter__(self):
+        self.reset()
+        return self
+
+    def __exit__(self, *args):
+        if self.__operation_name:
+            logger.log(f"<{self.__operation_name}> -> Execution time <{self.elapsed_time()}>")
+        self.reset()
 
     def reset(self):
         """Start the timer."""
