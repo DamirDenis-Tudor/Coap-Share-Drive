@@ -1,9 +1,9 @@
 import time
 
-from source.Utilities.Logger import logger
+from source.coap_core.coap_utilities.coap_logger import logger
 
 
-class Timer:
+class CoapTimer:
     def __init__(self, operation_name: str = None):
         self.__start_time = None
         self.__end_time = None

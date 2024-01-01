@@ -19,7 +19,7 @@ class LogColor(Enum):
     CYAN = '\033[96m'
 
 
-class CustomLogger:
+class CoapLogger:
     """
     A Singleton Thread-Safe Logger class that allows logging to the console or a log file.
 
@@ -43,6 +43,7 @@ class CustomLogger:
         self.destination = destination
         self.log_file = None
         self.log_directory = "logs"
+        self.is_enabled = True
 
         if self.destination == LogDestination.FILE:
             self.initialize_logger()
@@ -58,10 +59,10 @@ class CustomLogger:
             destination (LogDestination): The destination for logging (CONSOLE or FILE).
 
         Returns:
-            CustomLogger: The logger instance.
+            CoapLogger: The logger instance.
         """
         if cls._instance is None:
-            cls._instance = super(CustomLogger, cls).__new__(cls)
+            cls._instance = super(CoapLogger, cls).__new__(cls)
             cls._instance.destination = destination
         return cls._instance
 
@@ -99,16 +100,17 @@ class CustomLogger:
         Note:
             The color argument is only used for console logging.
         """
-        current_time = datetime.datetime.now().strftime("%H:%M:%S")
-        log_message = f"{current_time} - {message}"
-        with CustomLogger._lock:
-            if self.destination == LogDestination.CONSOLE:
-                if color is not None:
-                    log_message = f"{color.value}{log_message}{LogColor.RESET.value}"
-                print(log_message)
-            elif self.destination == LogDestination.FILE:
-                with open(self.log_file, 'a') as log_file:
-                    log_file.write(log_message + "\n")
+        if self.is_enabled:
+            current_time = datetime.datetime.now().strftime("%H:%M:%S")
+            log_message = f"{current_time} - {message}"
+            with CoapLogger._lock:
+                if self.destination == LogDestination.CONSOLE:
+                    if color is not None:
+                        log_message = f"{color.value}{log_message}{LogColor.RESET.value}"
+                    print(log_message)
+                elif self.destination == LogDestination.FILE:
+                    with open(self.log_file, 'a') as log_file:
+                        log_file.write(log_message + "\n")
 
     def __call__(self, func) -> object:
         """
@@ -139,4 +141,4 @@ class CustomLogger:
         return wrapper
 
 
-logger = CustomLogger(LogDestination.CONSOLE)
+logger = CoapLogger(LogDestination.CONSOLE)

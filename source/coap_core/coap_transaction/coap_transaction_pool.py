@@ -1,13 +1,9 @@
-import random
 import threading
 import time
-from _socket import IPPROTO_UDP
-from socket import socket, AF_INET, SOCK_DGRAM
 
-from source.Packet.CoapPacket import CoapPacket
-from source.Transaction.CoapTransaction import CoapTransaction
-from source.Utilities.Logger import logger
-from source.Utilities.Timer import Timer
+from source.coap_core.coap_packet.coap_packet import CoapPacket
+from source.coap_core.coap_transaction.coap_transaction import CoapTransaction
+from source.coap_core.coap_utilities.coap_timer import CoapTimer
 
 
 class CoapTransactionPool:
@@ -59,7 +55,7 @@ class CoapTransactionPool:
 
         return CoapTransactionPool.SUCCESSFULLY_ADDED
 
-    def add_transaction(self, packet: CoapPacket, parent_msg_id=None):
+    def add_transaction(self, packet: CoapPacket, parent_msg_id=0):
         transaction = CoapTransaction(packet, parent_msg_id)
         # make the initial request
         transaction.request.skt.sendto(transaction.request.encode(), transaction.request.sender_ip_port)
@@ -72,7 +68,7 @@ class CoapTransactionPool:
             self.__transaction_dict[key] = transaction
 
     def solve_transactions(self):
-        with Timer():
+        with CoapTimer():
             if len(self.__transaction_dict) > 0:
                 keys_copy = list(self.__transaction_dict.keys())
 

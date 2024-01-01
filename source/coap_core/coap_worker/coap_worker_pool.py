@@ -1,27 +1,31 @@
-import abc
 import threading
 
 import socket
 import time
 from _socket import *
 from abc import ABC
-from multiprocessing import Queue
 from select import select
 from socket import socket, AF_INET, SOCK_DGRAM
-from source.Core.AbstractWorker import AbstractWorker, WorkerType
-from source.Core.ClientWorker import ClientWorker
-from source.Core.ServerWorker import ServerWorker
-from source.Packet.CoapConfig import CoapType, CoapCodeFormat, CoapOptionDelta
-from source.Packet.CoapTemplates import CoapTemplates
-from source.Transaction.CoapTransactionPool import CoapTransactionPool
-from source.Utilities.CustomQueue import CustomQueue
-from source.Utilities.Logger import logger
+from source.coap_core.coap_worker.coap_worker import CoapWorker
+from source.coap_core.coap_packet.coap_config import CoapType, CoapCodeFormat, CoapOptionDelta
+from source.coap_core.coap_packet.coap_templates import CoapTemplates
+from source.coap_core.coap_transaction.coap_transaction_pool import CoapTransactionPool
+from source.coap_core.coap_utilities.coap_queue import CoapQueue
+from source.coap_core.coap_utilities.coap_logger import logger
 from threading import Event
-from source.Packet.CoapPacket import CoapPacket
-from source.Utilities.Timer import Timer
+from source.coap_core.coap_packet.coap_packet import CoapPacket
+from source.coap_core.coap_utilities.coap_timer import CoapTimer
 
 
 class CoapWorkerPool(ABC):
+    CURRENT_TOKEN = -1
+
+    @staticmethod
+    def __gen_token() -> bytes:
+        CoapWorkerPool.CURRENT_TOKEN += 1
+        CoapWorkerPool.CURRENT_TOKEN = CoapWorkerPool.CURRENT_TOKEN
+        return int(CoapWorkerPool.CURRENT_TOKEN).to_bytes()
+
     @staticmethod
     def __verify_format(task) -> bool:
         if (task.version != 1
@@ -32,10 +36,9 @@ class CoapWorkerPool(ABC):
 
         return True
 
-    def __init__(self, worker_class: type, ip_address: str, port: int):
+    def __init__(self, ip_address: str, port: int):
 
-        self.name = f"WorkerPoll[{worker_class}]"
-        self.__worker_class = worker_class
+        self.name = f"WorkerPoll"
 
         self._short_term_shared_work = {}
         self._long_term_shared_work = {}
@@ -44,16 +47,16 @@ class CoapWorkerPool(ABC):
         self._socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
         self._socket.bind((ip_address, port))
 
-        self.__workers: list[AbstractWorker] = []
+        self.__workers: list[CoapWorker] = []
 
-        self.__received_packets = CustomQueue()
-        self.__valid_coap_packets = CustomQueue()
+        self.__received_packets = CoapQueue()
+        self.__valid_coap_packets = CoapQueue()
 
         self.__event_check_idle = Event()
         self.__event_handle_transactions = Event()
         self.__event_deduplication = Event()
 
-        self.__max_queue_size = 50000
+        self.__max_queue_size = 10000
         self.__allowed_idle_time = 60
 
         self.__background_threads: list[threading.Thread] = [
@@ -64,7 +67,7 @@ class CoapWorkerPool(ABC):
         ]
         self.__is_running = True
 
-        CoapTransactionPool()
+        self.__transaction_pool = CoapTransactionPool()
 
     def add_background_thread(self, thread: threading.Thread):
         self.__background_threads.append(thread)
@@ -78,15 +81,15 @@ class CoapWorkerPool(ABC):
             self._long_term_shared_work.pop(work_data)
 
     @logger
-    def _create_worker(self) -> AbstractWorker:
-        chosen_worker = self.__worker_class(self)
+    def _create_worker(self) -> CoapWorker:
+        chosen_worker = CoapWorker(self)
         chosen_worker.start()
 
         self.__workers.append(chosen_worker)
 
         return chosen_worker
 
-    def _choose_worker(self) -> AbstractWorker:
+    def _choose_worker(self) -> CoapWorker:
         light_loaded_workers = filter(lambda worker: not worker.is_heavily_loaded(), self.__workers)
         available_workers = filter(lambda worker: worker.get_queue_size() < self.__max_queue_size, light_loaded_workers)
         chosen_worker = min(available_workers, default=None, key=lambda x: x.get_queue_size())
@@ -124,7 +127,7 @@ class CoapWorkerPool(ABC):
         while self.__is_running:
             packet: CoapPacket = self.__valid_coap_packets.get()
 
-            with (Timer()):
+            with (CoapTimer()):
 
                 work = packet.short_term_work_id()
 
@@ -163,11 +166,14 @@ class CoapWorkerPool(ABC):
 
                     case CoapType.CON.value:
                         if (packet.token, packet.sender_ip_port) not in self._failed_requests:
-                            if CoapCodeFormat.is_method(packet.code):  # request -> EMPTY ACK & PROCES REQUEST
+                            if CoapCodeFormat.is_method(packet.code):  # GET PUT POST DELETE FETCH
                                 ack = CoapTemplates.EMPTY_ACK.value_with(packet.token, packet.message_id)
-                            else:  # content -> SUCCESS ACK
-                                ack = CoapTemplates.SUCCESS_ACK.value_with(packet.token, packet.message_id)
+                            elif packet.code == CoapCodeFormat.SUCCESS_CONTENT.value():  # CONTENT
+                                ack = CoapTemplates.SUCCESS_VALID_ACK.value_with(packet.token, packet.message_id)
                                 ack.payload = str(packet.get_block_id()).encode('utf-8')
+                            else:
+                                ack = CoapTemplates.EMPTY_ACK.value_with(packet.token, packet.message_id)
+
                             self._socket.sendto(ack.encode(), packet.sender_ip_port)
 
                             self.__valid_coap_packets.put(packet)
@@ -215,6 +221,9 @@ class CoapWorkerPool(ABC):
         for thread in self.__background_threads:
             thread.join()
 
-    @abc.abstractmethod
-    def get_resource(self, path):
-        pass
+    def handle_internal_task(self, task, internal_computation=False):
+        # give unique token
+        task.token = CoapWorkerPool.__gen_token()
+        self.__transaction_pool.add_transaction(task)
+        if internal_computation:
+            self._create_worker().submit_task(task)

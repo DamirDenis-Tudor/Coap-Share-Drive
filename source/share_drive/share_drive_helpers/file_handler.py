@@ -1,16 +1,13 @@
 import os
 import random
 import threading
-from _socket import IPPROTO_UDP
-from socket import socket, AF_INET, SOCK_DGRAM
 
-from source.Packet.CoapConfig import CoapOptionDelta
-from source.Packet.CoapPacket import CoapPacket
-from source.Packet.CoapTemplates import CoapTemplates
-from source.Transaction.CoapTransaction import CoapTransaction
-from source.Transaction.CoapTransactionPool import CoapTransactionPool
-from source.Utilities.Logger import logger
-from source.Utilities.Timer import Timer
+from source.coap_core.coap_packet.coap_config import CoapOptionDelta
+from source.coap_core.coap_packet.coap_packet import CoapPacket
+from source.coap_core.coap_packet.coap_templates import CoapTemplates
+from source.coap_core.coap_transaction.coap_transaction_pool import CoapTransactionPool
+from source.coap_core.coap_utilities.coap_logger import logger
+from source.coap_core.coap_utilities.coap_timer import CoapTimer
 
 
 class FileHandler:
@@ -65,24 +62,23 @@ class FileHandler:
             if not hasattr(self, 'initialized'):
                 self.initialized = True
                 self.__transaction_pool = CoapTransactionPool()
-                self.__in_assembly: dict[bytes, dict] = {}
-                self.__assembled: list[bytes] = []
-                self.test = random.choice([1, 2, 3, 4, 5])
+                self.__in_assembly: dict[tuple, dict] = {}
+                self.__assembled: list[tuple] = []
 
-    def handle_packets(self, packet: CoapPacket) -> int:
+    def handle_packets(self, packet: CoapPacket, path: str) -> int:
         with FileHandler._lock:
-
+            # path
             # add conditions
             option = CoapPacket().decode_option_block(packet.options[CoapOptionDelta.BLOCK2.value])
 
-            if packet.token not in self.__in_assembly:  # register file operation-related packets
-                self.__in_assembly[packet.token] = {
+            if packet.general_work_id() not in self.__in_assembly:  # register file operation-related packets
+                self.__in_assembly[packet.general_work_id()] = {
                     "TOTAL_RESPONSES": 0,
                     "WRITE_INDEX": 0,
                     "RECEIVED_PACKETS": {}
                 }
 
-            operation_dict = self.__in_assembly[packet.token]
+            operation_dict = self.__in_assembly[packet.general_work_id()]
 
             logger.log(f"Handle {operation_dict['WRITE_INDEX']} -> {packet} .")
 
@@ -97,20 +93,22 @@ class FileHandler:
                     operation_dict["WRITE_INDEX"] += 1
 
                 for i in range(index, operation_dict["WRITE_INDEX"] + 1):
-                    with open(f"/home/damir/GithubRepos/proiectrcp2023-echipa-21-2023/test{self.test}.zip", 'ab') as file:
+                    with open(path, 'ab') as file:
                         file.write(operation_dict["RECEIVED_PACKETS"][i])
                         operation_dict["RECEIVED_PACKETS"].pop(i)
                 operation_dict["WRITE_INDEX"] += 1
             else:
                 operation_dict["RECEIVED_PACKETS"][option["NUM"]] = packet.payload
 
-            if packet.token in self.__assembled:
+            if packet.general_work_id() in self.__assembled:
                 return FileHandler.ALREADY_ASSEMBLED
 
             if operation_dict["TOTAL_RESPONSES"] != 0:
                 if operation_dict["WRITE_INDEX"] - 1 == operation_dict["TOTAL_RESPONSES"]:
-                    self.__in_assembly.pop(packet.token)
-                    self.__assembled.append(packet.token)
+                    self.__in_assembly.pop(packet.general_work_id())
+                    self.__assembled.append(packet.general_work_id())
+
+                    logger.log(f"Assembly of {packet.general_work_id()} finished.")
 
                     return FileHandler.FINISH_ASSEMBLY
 
@@ -118,41 +116,46 @@ class FileHandler:
 
     def get_sender(self):
         def split_and_send(request: CoapPacket, path: str):
-            block_fields = CoapPacket.decode_option_block(request.options[CoapOptionDelta.BLOCK1.value])
+            with CoapTimer(f"<{request.sender_ip_port}->{request.token}> get_request"):
+                block_fields = CoapPacket.decode_option_block(request.options[CoapOptionDelta.BLOCK1.value])
 
-            total_packets = FileHandler.get_total_packets(path, block_fields["BLOCK_SIZE"])
-            generator = FileHandler.split_file_on_packets(path, block_fields["BLOCK_SIZE"])
+                total_packets = FileHandler.get_total_packets(path, block_fields["BLOCK_SIZE"])
+                generator = FileHandler.split_file_on_packets(path, block_fields["BLOCK_SIZE"])
 
-            logger.log(f"<{request.sender_ip_port}->{request.token}> Total packets: {total_packets}")
-            if generator:
+                logger.log(f"<{request.sender_ip_port}->{request.token}> Total packets: {total_packets}")
+                if generator:
 
-                index = 1
-                for payload in generator:
-                    response = CoapTemplates.BYTES_RESPONSE.value_with(request.token, request.message_id + index)
-                    response.payload = payload
-                    response.skt = request.skt
-                    response.sender_ip_port = request.sender_ip_port
-                    response.options[CoapOptionDelta.BLOCK2.value] = (
-                        CoapPacket.encode_option_block(index - 1, int(index != total_packets), block_fields["SZX"])
-                    )
+                    index = 1
+                    for payload in generator:
+                        response = CoapTemplates.BYTES_RESPONSE.value_with(request.token, request.message_id + index)
+                        response.payload = payload
+                        response.skt = request.skt
+                        response.sender_ip_port = request.sender_ip_port
+                        response.options[CoapOptionDelta.BLOCK2.value] = (
+                            CoapPacket.encode_option_block(index - 1, int(index != total_packets), block_fields["SZX"])
+                        )
+                        response.options[CoapOptionDelta.LOCATION_PATH.value] = '/' + path.split('/')[-1]
 
-                    status = self.__transaction_pool.handle_congestions(
+                        status = self.__transaction_pool.handle_congestions(
+                                response,
+                                index == total_packets
+                        )
+
+                        if status == CoapTransactionPool.FAIL_TO_ADD:
+                            logger.log("Transmission failed.")
+                            generator.close()
+
+                        self.__transaction_pool.add_transaction(
                             response,
-                            index == total_packets
-                    )
+                            request.message_id
+                        )
 
-                    if status == CoapTransactionPool.FAIL_TO_ADD:
-                        logger.log("Transmission failed.")
-                        generator.close()
+                        index += 1
 
-                    self.__transaction_pool.add_transaction(
-                        response,
-                        request.message_id
-                    )
-
-                    index += 1
-            else:
-                pass
+                    retransmissions = CoapTransactionPool().get_number_of_retransmissions(request)
+                    logger.log(f"<{request.sender_ip_port}->{request.token}> Retransmissions : {retransmissions}")
+                else:
+                    pass
 
         return split_and_send
 

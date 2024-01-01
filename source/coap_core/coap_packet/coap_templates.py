@@ -1,8 +1,8 @@
 from copy import deepcopy
 from enum import Enum
 
-from source.Packet.CoapConfig import CoapType, CoapCodeFormat, CoapContentFormat, CoapOptionDelta
-from source.Packet.CoapPacket import CoapPacket
+from source.coap_core.coap_packet.coap_config import CoapType, CoapCodeFormat, CoapContentFormat, CoapOptionDelta
+from source.coap_core.coap_packet.coap_packet import CoapPacket
 
 
 class CoapTemplates(Enum):
@@ -94,6 +94,16 @@ class CoapTemplates(Enum):
         payload=""
     )
 
+    CONFLICT = CoapPacket(
+        version=1,
+        message_type=CoapType.RST.value,
+        token=b"",
+        code=CoapCodeFormat.CLIENT_ERROR_CONFLICT.value(),
+        message_id=0,
+        options={},
+        payload=""
+    )
+
     FAILED_REQUEST = CoapPacket(
         version=1,
         message_type=CoapType.RST.value,
@@ -124,11 +134,11 @@ class CoapTemplates(Enum):
         payload=""
     )
 
-    SUCCESS_ACK = CoapPacket(
+    SUCCESS_VALID_ACK = CoapPacket(
         version=1,
         message_type=CoapType.ACK.value,
         token=b"",
-        code=CoapCodeFormat.SUCCESS_CONTENT.value(),
+        code=CoapCodeFormat.SUCCESS_VALID.value(),
         message_id=0,
         options={
             CoapOptionDelta.CONTENT_FORMAT.value: CoapContentFormat.TEXT_PLAIN_UTF8.value,

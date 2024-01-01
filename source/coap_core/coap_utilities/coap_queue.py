@@ -2,7 +2,7 @@ from threading import Event, Thread
 from time import sleep
 
 
-class CustomQueue:
+class CoapQueue:
     """
         Class specially tailored for CoapWorkerPool
     """
