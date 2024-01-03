@@ -98,8 +98,7 @@ class CoapCodeFormat(Enum):
     @staticmethod
     def get_field_name(value):
         for member in CoapCodeFormat:
-            print(member.value())
-            if member.value == value:
+            if member.value() == value:
                 return member
         return None
 
@@ -149,6 +148,7 @@ class CoapOptionDelta(Enum):
     PROXY_SCHEME = 39
 
     SIZE1 = 60
+    SIZE2 = 28
 
     @staticmethod
     def is_valid(items: dict):

@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from queue import Queue
 from threading import Thread
 
 from source.coap_core.coap_packet.coap_config import CoapOptionDelta, CoapCodeFormat
@@ -8,7 +9,7 @@ from source.coap_core.coap_resource.resource_manager import ResourceManager
 from source.coap_core.coap_utilities.coap_queue import CoapQueue
 from source.coap_core.coap_utilities.coap_logger import logger
 from source.coap_core.coap_utilities.coap_timer import CoapTimer
-from source.share_drive.share_drive_helpers.file_handler import FileHandler
+from source.share_drive_helpers.file_handler import FileHandler
 
 
 class CoapWorker(Thread, ):
@@ -17,17 +18,16 @@ class CoapWorker(Thread, ):
 
         self.__is_running = True
 
-        self._request_queue = CoapQueue()
+        self._request_queue = Queue()
         self._task = CoapPacket()
         self._owner = owner
-        self._file_handler = FileHandler()
         self._heavy_work = False
 
         self._timer = CoapTimer()
         self._timer.reset()
 
     def get_queue_size(self):
-        return self._request_queue.size()
+        return self._request_queue.qsize()
 
     def get_idle_time(self):
         return self._timer.elapsed_time()
@@ -86,18 +86,22 @@ class CoapWorker(Thread, ):
             reset = CoapTemplates.BAD_REQUEST.value_with(task.token, task.message_id)
             task.skt.sendto(reset.encode(), task.sender_ip_port)
             return
-        task_code = task.code
-        if task_code == CoapCodeFormat.GET.value():
-            with self.heavy_work():
-                resource.handle_get(task)
-        elif task_code == CoapCodeFormat.PUT.value():
-            with self.heavy_work():
-                resource.handle_put(task)
-        elif task_code == CoapCodeFormat.POST.value():
-            resource.handle_post(task)
-        elif task_code == CoapCodeFormat.DELETE.value():
-            resource.handle_delete(task)
-        elif task_code == CoapCodeFormat.FETCH.value():
-            resource.handle_fetch(task)
-        else:
+
+        if task.needs_internal_computation:
             resource.non_method(task)
+        else:
+            task_code = task.code
+            if task_code == CoapCodeFormat.GET.value():
+                with self.heavy_work():
+                    resource.handle_get(task)
+            elif task_code == CoapCodeFormat.PUT.value():
+                with self.heavy_work():
+                    resource.handle_put(task)
+            elif task_code == CoapCodeFormat.POST.value():
+                resource.handle_post(task)
+            elif task_code == CoapCodeFormat.DELETE.value():
+                resource.handle_delete(task)
+            elif task_code == CoapCodeFormat.FETCH.value():
+                resource.handle_fetch(task)
+            else:
+                resource.non_method(task)

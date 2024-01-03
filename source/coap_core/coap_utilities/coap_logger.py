@@ -3,6 +3,8 @@ import datetime
 import threading
 from enum import Enum
 
+from source.coap_core.coap_utilities.coap_singleton import CoapSingleton, CoapSingletonBase
+
 
 class LogDestination(Enum):
     CONSOLE = 1
@@ -19,7 +21,7 @@ class LogColor(Enum):
     CYAN = '\033[96m'
 
 
-class CoapLogger:
+class CoapLogger(CoapSingletonBase):
     """
     A Singleton Thread-Safe Logger class that allows logging to the console or a log file.
 
@@ -30,8 +32,6 @@ class CoapLogger:
     Args:
         destination (LogDestination): The destination for logging (CONSOLE or FILE).
     """
-    _instance = None
-    _lock = threading.Lock()
 
     def __init__(self, destination):
         """
@@ -44,27 +44,10 @@ class CoapLogger:
         self.log_file = None
         self.log_directory = "logs"
         self.is_enabled = True
+        self._lock = threading.Lock()
 
         if self.destination == LogDestination.FILE:
             self.initialize_logger()
-
-    def __new__(cls, destination):
-        """
-        Create a new instance of the logger or return the existing instance.
-
-        This method ensures that only one instance of the logger is created
-        for each destination by implementing the Singleton pattern.
-
-        Args:
-            destination (LogDestination): The destination for logging (CONSOLE or FILE).
-
-        Returns:
-            CoapLogger: The logger instance.
-        """
-        if cls._instance is None:
-            cls._instance = super(CoapLogger, cls).__new__(cls)
-            cls._instance.destination = destination
-        return cls._instance
 
     def initialize_logger(self):
         """
@@ -99,11 +82,25 @@ class CoapLogger:
 
         Note:
             The color argument is only used for console logging.
+            :param color:
+            :param message:
+            :param time:
         """
+        log_message = message
+        with self._lock:
+            if self.destination == LogDestination.CONSOLE:
+                if color is not None:
+                    log_message = f"{color.value}{log_message}{LogColor.RESET.value}"
+                print(log_message)
+
+    def debug(self, message, color=LogColor.GREEN, time=True):
         if self.is_enabled:
             current_time = datetime.datetime.now().strftime("%H:%M:%S")
-            log_message = f"{current_time} - {message}"
-            with CoapLogger._lock:
+            if time:
+                log_message = f"{current_time} - {message}"
+            else:
+                log_message = message
+            with self._lock:
                 if self.destination == LogDestination.CONSOLE:
                     if color is not None:
                         log_message = f"{color.value}{log_message}{LogColor.RESET.value}"
@@ -127,14 +124,14 @@ class CoapLogger:
 
         def wrapper(*args, **kwargs):
             name = threading.current_thread().name
-            self.log(f"{name} Calling function: {func.__name__} {args}", LogColor.MAGENTA)
+            self.debug(f"{name} Calling function: {func.__name__} {args}", LogColor.MAGENTA)
             try:
                 result = func(*args, **kwargs)
                 if result is not None:
-                    self.log(f"{name} Result of {func.__name__}: {result}", LogColor.BLUE)
+                    self.debug(f"{name} Result of {func.__name__}: {result}", LogColor.BLUE)
                     return result
             except Exception as e:
-                self.log(
+                self.debug(
                     f"{name} Function {func.__name__} encountered an exception: {e}", LogColor.RED)
                 raise e
 

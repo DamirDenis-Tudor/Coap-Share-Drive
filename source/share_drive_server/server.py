@@ -1,6 +1,8 @@
+import argparse
+
+from share_drive_server.server_resource import ServerResource
 from source.coap_core.coap_worker.coap_worker_pool import CoapWorkerPool
 from source.coap_core.coap_resource.resource_manager import ResourceManager
-from source.share_drive.share_drive_server.server_resource import ServerResource
 
 
 class Server(CoapWorkerPool):
@@ -12,9 +14,14 @@ class Server(CoapWorkerPool):
         ResourceManager().add_default_resource(ServerResource("share_drive"))
 
 
-if __name__ == '__main__':
-    server = Server(
-        '127.0.0.2',
-        int(5683)
-    )
-    server.listen()
+def main():
+    parser = argparse.ArgumentParser(description='Server script with address and port arguments')
+
+    parser.add_argument('--server_address', type=str, default='127.0.0.1', help='Server address')
+    parser.add_argument('--server_port', type=int, default=5683, help='Server port')
+
+    args = parser.parse_args()
+
+    Server(args.server_address, args.server_port).listen()
+
+main()

@@ -1,27 +1,17 @@
 import os
-import threading
 
+
+from source.coap_core.coap_utilities.coap_singleton import CoapSingletonBase
 from source.coap_core.coap_resource.resource import Resource
 
 
-class ResourceManager:
-    _instance = None
-    _lock = threading.Lock()
-
-    def __new__(cls, *args, **kwargs):
-        # with cls._lock:
-        # Create a single instance of TransactionsPool if it doesn't exist
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
+class ResourceManager(CoapSingletonBase):
 
     def __init__(self):
-        with self._lock:
-            if not hasattr(self, 'initialized'):
-                self.initialized = True
-                self.__resources: list = []
-                self.__default_resource = None
-                self.__root_path = None
+        self.initialized = True
+        self.__resources: list = []
+        self.__default_resource = None
+        self.__root_path = None
 
     def set_root_path(self, root_path: str):
         self.__root_path = root_path

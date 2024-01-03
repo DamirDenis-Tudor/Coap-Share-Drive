@@ -1,17 +1,20 @@
+import sys
 import threading
 
 import socket
 import time
 from _socket import *
 from abc import ABC
+from queue import Queue
 from select import select
 from socket import socket, AF_INET, SOCK_DGRAM
+
 from source.coap_core.coap_worker.coap_worker import CoapWorker
 from source.coap_core.coap_packet.coap_config import CoapType, CoapCodeFormat, CoapOptionDelta
 from source.coap_core.coap_packet.coap_templates import CoapTemplates
 from source.coap_core.coap_transaction.coap_transaction_pool import CoapTransactionPool
 from source.coap_core.coap_utilities.coap_queue import CoapQueue
-from source.coap_core.coap_utilities.coap_logger import logger
+from source.coap_core.coap_utilities.coap_logger import logger, LogColor
 from threading import Event
 from source.coap_core.coap_packet.coap_packet import CoapPacket
 from source.coap_core.coap_utilities.coap_timer import CoapTimer
@@ -49,14 +52,15 @@ class CoapWorkerPool(ABC):
 
         self.__workers: list[CoapWorker] = []
 
-        self.__received_packets = CoapQueue()
-        self.__valid_coap_packets = CoapQueue()
+        self.__received_packets = Queue()
+        self.__valid_coap_packets = Queue()
 
         self.__event_check_idle = Event()
         self.__event_handle_transactions = Event()
         self.__event_deduplication = Event()
+        self.__stop_event = threading.Event()
 
-        self.__max_queue_size = 10000
+        self.__max_queue_size = 20000
         self.__allowed_idle_time = 60
 
         self.__background_threads: list[threading.Thread] = [
@@ -65,6 +69,8 @@ class CoapWorkerPool(ABC):
             threading.Thread(target=self.deduplication_filter),
             threading.Thread(target=self.handle_transactions),
         ]
+
+        self.__stopping_thread: threading.Thread = threading.Thread(target=self.__safe_stop)
         self.__is_running = True
 
         self.__transaction_pool = CoapTransactionPool()
@@ -150,7 +156,7 @@ class CoapWorkerPool(ABC):
                     else:
                         self._short_term_shared_work[work] = time.time()
                 else:
-                    logger.log(f"{self.name} Packet duplicated: \n {packet.__repr__()}")
+                    logger.debug(f"{self.name} Packet duplicated: \n {packet.__repr__()}")
 
     @logger
     def coap_format_filter(self):
@@ -158,37 +164,37 @@ class CoapWorkerPool(ABC):
         while self.__is_running:
             data: tuple[bytes, tuple] = self.__received_packets.get()
             packet = CoapPacket.decode(data[0], data[1], self._socket)
-
             # verifying the integrity of the packet
             if CoapWorkerPool.__verify_format(packet):
-
                 match packet.message_type:
 
                     case CoapType.CON.value:
-                        if (packet.token, packet.sender_ip_port) not in self._failed_requests:
+                        if not self.__transaction_pool.is_overall_transaction_failed(packet):
                             if CoapCodeFormat.is_method(packet.code):  # GET PUT POST DELETE FETCH
                                 ack = CoapTemplates.EMPTY_ACK.value_with(packet.token, packet.message_id)
                             elif packet.code == CoapCodeFormat.SUCCESS_CONTENT.value():  # CONTENT
                                 ack = CoapTemplates.SUCCESS_VALID_ACK.value_with(packet.token, packet.message_id)
-                                ack.payload = str(packet.get_block_id()).encode('utf-8')
+                                block_id = packet.get_block_id()
+                                ack.payload = str(block_id)
                             else:
                                 ack = CoapTemplates.EMPTY_ACK.value_with(packet.token, packet.message_id)
 
                             self._socket.sendto(ack.encode(), packet.sender_ip_port)
-
                             self.__valid_coap_packets.put(packet)
 
                     case CoapType.ACK.value:
                         CoapTransactionPool().finish_transaction(packet)
 
                     case CoapType.RST.value:
-                        logger.log("Failed")
-                        self._failed_requests[packet.token, packet.sender_ip_port] = time.time()
+                        self._failed_requests[packet.general_work_id()] = time.time()
+                        self.__transaction_pool.set_overall_transaction_failure(packet)
+                        self.__transaction_pool.finish_overall_transaction(packet)
+                        logger.log(f"! Warning: {CoapCodeFormat.get_field_name(packet.code)}", LogColor.YELLOW)
 
                     case _:
                         pass
             else:
-                logger.log(f"{self.name} Invalid coap format: \n {packet.__repr__()}")
+                logger.debug(f"{self.name} Invalid coap format: \n {packet.__repr__()}")
 
                 invalid_format = CoapTemplates.NON_COAP_FORMAT.value_with(packet.token, packet.message_id)
                 invalid_format.code = CoapCodeFormat.SERVER_ERROR_INTERNAL_SERVER_ERROR.value()
@@ -197,6 +203,7 @@ class CoapWorkerPool(ABC):
 
     @logger
     def listen(self):
+        self.__stopping_thread.start()
         for thread in self.__background_threads:
             thread.start()
 
@@ -210,20 +217,33 @@ class CoapWorkerPool(ABC):
 
                 self.__event_handle_transactions.set()
                 self.__event_check_idle.set()
-            except KeyboardInterrupt as e:
+            except Exception:
+                pass
 
-                self.__is_running = False
-                self.__event_check_idle.set()
+        self.__stop_event.set()
+
+    def handle_internal_task(self, task: CoapPacket):
+        # give unique token
+        task.token = CoapWorkerPool.__gen_token()
+        if task.needs_internal_computation:
+            self._create_worker().submit_task(task)
+        self.__transaction_pool.add_transaction(task)
+
+    def stop(self):
+        self.__stop_event.set()
+
+    @logger
+    def __safe_stop(self):
+        self.__stop_event.wait()  # Set the event to signal threads to stop
+
+        self.__is_running = False
 
         for worker in self.__workers:
             worker.stop()
 
-        for thread in self.__background_threads:
-            thread.join()
+        for worker in self.__workers:
+            worker.join()
 
-    def handle_internal_task(self, task, internal_computation=False):
-        # give unique token
-        task.token = CoapWorkerPool.__gen_token()
-        self.__transaction_pool.add_transaction(task)
-        if internal_computation:
-            self._create_worker().submit_task(task)
+        self._socket.close()
+
+        sys.exit(0)

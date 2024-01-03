@@ -15,7 +15,7 @@ class CoapTimer:
 
     def __exit__(self, *args):
         if self.__operation_name:
-            logger.log(f"<{self.__operation_name}> -> Execution time <{self.elapsed_time()}>")
+            print(f"<{self.__operation_name}> -> Execution time <{self.elapsed_time()}>")
         self.reset()
 
     def reset(self):
