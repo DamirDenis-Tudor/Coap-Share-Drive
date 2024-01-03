@@ -1,7 +1,7 @@
-from source.Packet.CoapPacket import CoapPacket
-from source.Packet.CoapTemplates import CoapTemplates
-from source.Utilities.Logger import logger
-from source.Utilities.Timer import Timer
+from source.coap_core.coap_packet.coap_packet import CoapPacket
+from source.coap_core.coap_packet.coap_templates import CoapTemplates
+from source.coap_core.coap_utilities.coap_logger import logger
+from source.coap_core.coap_utilities.coap_timer import CoapTimer
 
 
 class CoapTransaction:
@@ -18,7 +18,7 @@ class CoapTransaction:
     def __init__(self, request: CoapPacket, parent_msg_id: int):
         self.__request: CoapPacket = request
         self.__parent_msg_id = parent_msg_id
-        self.__timer: Timer = Timer().reset()
+        self.__timer: CoapTimer = CoapTimer().reset()
         self.__ack_timeout = CoapTransaction.ACK_TIMEOUT
         self.__transmit_time_span = 0
         self.__retransmission_counter = 0
@@ -32,7 +32,7 @@ class CoapTransaction:
         return self.__parent_msg_id
 
     @property
-    def timer(self) -> Timer:
+    def timer(self) -> CoapTimer:
         return self.__timer
 
     @property

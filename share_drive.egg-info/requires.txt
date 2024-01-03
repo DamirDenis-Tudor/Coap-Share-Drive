@@ -1,0 +1,5 @@
+setuptools~=69.0.3
+pyfiglet~=1.0.2
+questionary~=2.0.1
+readchar~=4.0.5
+tqdm~=4.66.1

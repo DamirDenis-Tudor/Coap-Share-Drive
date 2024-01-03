@@ -1,8 +1,8 @@
 from copy import deepcopy
 from enum import Enum
 
-from source.Packet.CoapConfig import CoapType, CoapCodeFormat, CoapContentFormat, CoapOptionDelta
-from source.Packet.CoapPacket import CoapPacket
+from source.coap_core.coap_packet.coap_config import CoapType, CoapCodeFormat, CoapContentFormat, CoapOptionDelta
+from source.coap_core.coap_packet.coap_packet import CoapPacket
 
 
 class CoapTemplates(Enum):
@@ -35,7 +35,7 @@ class CoapTemplates(Enum):
         payload=""
     )
 
-    MV = CoapPacket(
+    MOVE = CoapPacket(
         version=1,
         message_type=CoapType.CON.value,
         token=b"",
@@ -62,7 +62,7 @@ class CoapTemplates(Enum):
         payload=""
     )
 
-    SYNC = CoapPacket(
+    FETCH = CoapPacket(
         version=1,
         message_type=CoapType.CON.value,
         token=b"",
@@ -84,11 +84,41 @@ class CoapTemplates(Enum):
         payload=""
     )
 
+    NOT_IMPLEMENTED = CoapPacket(
+        version=1,
+        message_type=CoapType.RST.value,
+        token=b"",
+        code=CoapCodeFormat.SERVER_ERROR_NOT_IMPLEMENTED.value(),
+        message_id=0,
+        options={},
+        payload=""
+    )
+
     BAD_REQUEST = CoapPacket(
         version=1,
         message_type=CoapType.RST.value,
         token=b"",
         code=CoapCodeFormat.CLIENT_ERROR_BAD_REQUEST.value(),
+        message_id=0,
+        options={},
+        payload=""
+    )
+
+    CONFLICT = CoapPacket(
+        version=1,
+        message_type=CoapType.RST.value,
+        token=b"",
+        code=CoapCodeFormat.CLIENT_ERROR_CONFLICT.value(),
+        message_id=0,
+        options={},
+        payload=""
+    )
+
+    NOT_FOUND = CoapPacket(
+        version=1,
+        message_type=CoapType.RST.value,
+        token=b"",
+        code=CoapCodeFormat.CLIENT_ERROR_NOT_FOUND.value(),
         message_id=0,
         options={},
         payload=""
@@ -124,11 +154,11 @@ class CoapTemplates(Enum):
         payload=""
     )
 
-    SUCCESS_ACK = CoapPacket(
+    SUCCESS_VALID_ACK = CoapPacket(
         version=1,
         message_type=CoapType.ACK.value,
         token=b"",
-        code=CoapCodeFormat.SUCCESS_CONTENT.value(),
+        code=CoapCodeFormat.SUCCESS_VALID.value(),
         message_id=0,
         options={
             CoapOptionDelta.CONTENT_FORMAT.value: CoapContentFormat.TEXT_PLAIN_UTF8.value,
@@ -146,6 +176,19 @@ class CoapTemplates(Enum):
             CoapOptionDelta.LOCATION_PATH.value: "",
             CoapOptionDelta.CONTENT_FORMAT.value: CoapContentFormat.APPLICATION_OCTET_STREAM.value,
             CoapOptionDelta.BLOCK2.value: 6,  # block size
+        },
+        payload=""
+    )
+
+    STR_PATH_RESPONSE = CoapPacket(
+        version=1,
+        message_type=CoapType.CON.value,
+        token=b"",
+        code=CoapCodeFormat.SUCCESS_CONTENT.value(),
+        message_id=0,
+        options={
+            CoapOptionDelta.CONTENT_FORMAT.value: CoapContentFormat.APPLICATION_JSON.value,
+            CoapOptionDelta.BLOCK2.value: 6,
         },
         payload=""
     )

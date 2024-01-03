@@ -1,68 +1,43 @@
-import random
 import threading
 import time
-from _socket import IPPROTO_UDP
-from socket import socket, AF_INET, SOCK_DGRAM
 
-from source.Packet.CoapPacket import CoapPacket
-from source.Transaction.CoapTransaction import CoapTransaction
-from source.Utilities.Logger import logger
-from source.Utilities.Timer import Timer
+from source.coap_core.coap_utilities.coap_singleton import CoapSingletonBase
+from source.coap_core.coap_packet.coap_packet import CoapPacket
+from source.coap_core.coap_transaction.coap_transaction import CoapTransaction
+from source.coap_core.coap_utilities.coap_timer import CoapTimer
 
 
-class CoapTransactionPool:
+class CoapTransactionPool(CoapSingletonBase):
     SUCCESSFULLY_ADDED = 1
     FAIL_TO_ADD = 2
 
-    """
-    Singleton class the work as an Observer to all transactions, more than that it gives flexibility
-    to access a certain transactions in any context.
-    """
-    _instance = None
-    _lock = threading.Lock()
-
-    def __new__(cls, *args, **kwargs):
-        """
-        Create a single instance of TransactionsPool using the singleton pattern.
-
-        Returns:
-        - TransactionsPool - The instance of TransactionsPool.
-        """
-        # with cls._lock:
-        # Create a single instance of TransactionsPool if it doesn't exist
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
-
     def __init__(self):
-        with self._lock:
-            if not hasattr(self, 'initialized'):
-                self.initialized = True
+        self.__is_running = True
 
-                self.__is_running = True
+        self.__overall_finished_transactions: dict = {}
+        self.__finished_transactions: dict[tuple] = {}
+        self.__failed_transactions: dict[tuple] = {}
+        self.__transaction_dict: dict[tuple, CoapTransaction] = {}
+        self.__retransmissions: dict = {}
 
-                self.__finished_transactions: dict[tuple] = {}
-                self.__failed_transactions: dict[tuple] = {}
-                self.__transaction_dict: dict[tuple, CoapTransaction] = {}
-                self.__retransmissions: dict = {}
-
-    def handle_congestions(self, packet: CoapPacket, last_packet: bool):
-        if self.transaction_previously_failed(packet):
-            return CoapTransactionPool.FAIL_TO_ADD
+    def handle_congestions(self, packet: CoapPacket, last_packet: bool = False):
+        if self.is_overall_transaction_failed(packet):
+            return True
 
         while len(self.__transaction_dict) >= 100:
-            pass
+            time.sleep(0.0001)
 
         if last_packet:
             while len(self.__transaction_dict) != 0:
-                pass
+                time.sleep(0.0001)
 
-        return CoapTransactionPool.SUCCESSFULLY_ADDED
+        return False
 
-    def add_transaction(self, packet: CoapPacket, parent_msg_id=None):
-        transaction = CoapTransaction(packet, parent_msg_id)
+    def add_transaction(self, packet: CoapPacket, parent_msg_id=0):
         # make the initial request
-        transaction.request.skt.sendto(transaction.request.encode(), transaction.request.sender_ip_port)
+        packet.skt.sendto(packet.encode(), packet.sender_ip_port)
+
+        transaction = CoapTransaction(packet, parent_msg_id)
 
         key = packet.short_term_work_id(packet.get_block_id())
 
@@ -71,8 +46,12 @@ class CoapTransactionPool:
         if key not in self.__finished_transactions:
             self.__transaction_dict[key] = transaction
 
+    def is_transaction_finished(self, packet: CoapPacket):
+        key = packet.short_term_work_id(packet.get_block_id())
+        return key in self.__finished_transactions
+
     def solve_transactions(self):
-        with Timer():
+        with CoapTimer():
             if len(self.__transaction_dict) > 0:
                 keys_copy = list(self.__transaction_dict.keys())
 
@@ -82,7 +61,7 @@ class CoapTransactionPool:
 
                         match self.__transaction_dict[key].run_transaction():
                             case CoapTransaction.FAILED_TRANSACTION:
-                                self.__failed_transactions[(key[0], key[1])] = time.time()
+                                self.set_overall_transaction_failure(self.__transaction_dict[key].request)
 
                                 self.__transaction_dict = {
                                     (t.request.sender_ip_port, t.request.token, t.request.message_id): t
@@ -112,15 +91,22 @@ class CoapTransactionPool:
         if key in self.__transaction_dict:
             del self.__transaction_dict[key]
 
-    def transaction_previously_failed(self, packet: CoapPacket):
-        key = packet.general_work_id()
-        if key in self.__failed_transactions:
-            self.__failed_transactions.pop(key)
-            return True
-        return False
+    def finish_overall_transaction(self, packet: CoapPacket):
+        self.__overall_finished_transactions[packet.general_work_id()] = time.time()
+
+    def wait_util_finish(self, packet: CoapPacket):
+        while packet.general_work_id() not in self.__overall_finished_transactions:
+            time.sleep(0.1)
+
+    def is_overall_transaction_failed(self, packet: CoapPacket):
+        return packet.general_work_id() in self.__failed_transactions
+
+    def set_overall_transaction_failure(self, packet: CoapPacket):
+        self.__failed_transactions[packet.general_work_id()] = time.time()
 
     def get_number_of_retransmissions(self, packet: CoapPacket):
         general_id = packet.general_work_id()
+
         if general_id in self.__retransmissions:
             return self.__retransmissions[general_id]
         return 0
