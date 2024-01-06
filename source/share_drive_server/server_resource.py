@@ -7,8 +7,8 @@ from source.share_drive_helpers.file_handler import FileHandler
 
 
 class ServerResource(Resource):
-    def __init__(self, path: str):
-        super().__init__(path)
+    def __init__(self, name: str, path):
+        super().__init__(name, path)
         self.__file_handler = FileHandler()
 
     @logger
@@ -47,6 +47,7 @@ class ServerResource(Resource):
         request.skt.sendto(invalid_request.encode(), request.sender_ip_port)
 
     def handle_fetch(self, request: CoapPacket):
+        # todo ->> handle case when server has no resource
         self.__file_handler.split_on_paths_and_send(request, self.get_path(), self.get_name())
 
     def internal_handling(self, request: CoapPacket):

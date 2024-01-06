@@ -80,7 +80,7 @@ class CoapTransaction:
                 return CoapTransaction.FAILED_TRANSACTION
 
             self.__request.skt.sendto(self.__request.encode(), self.__request.sender_ip_port)
-
+            logger.debug(f"Retrasmission of {self.__request}")
             return CoapTransaction.RETRANSMISSION
 
         return CoapTransaction.NO_ACTION

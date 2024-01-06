@@ -2,6 +2,7 @@ import os
 import datetime
 import threading
 from enum import Enum
+from multiprocessing import current_process
 
 from source.coap_core.coap_utilities.coap_singleton import CoapSingleton, CoapSingletonBase
 
@@ -123,16 +124,18 @@ class CoapLogger(CoapSingletonBase):
         """
 
         def wrapper(*args, **kwargs):
-            name = threading.current_thread().name
-            self.debug(f"{name} Calling function: {func.__name__} {args}", LogColor.MAGENTA)
+            process_name = current_process().name
+            thread_name = threading.current_thread().name
+
+            self.debug(f"{process_name} -> {thread_name} Calling function: {func.__name__} {args}", LogColor.MAGENTA)
             try:
                 result = func(*args, **kwargs)
                 if result is not None:
-                    self.debug(f"{name} Result of {func.__name__}: {result}", LogColor.BLUE)
+                    self.debug(f"{process_name} -> {thread_name} Result of {func.__name__}: {result}", LogColor.BLUE)
                     return result
             except Exception as e:
                 self.debug(
-                    f"{name} Function {func.__name__} encountered an exception: {e}", LogColor.RED)
+                    f"{process_name} -> {thread_name} Function {func.__name__} encountered an exception: {e}", LogColor.RED)
                 raise e
 
         return wrapper

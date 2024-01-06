@@ -90,7 +90,7 @@ class FileHandler(metaclass=CoapSingleton):
                 self.__work_timer.reset()
 
             operation_dict = self.__in_assembly[packet.general_work_id()]
-            logger.debug(f"Write Index : {operation_dict['WRITE_INDEX']} -> Handle the packet: {packet}")
+            # logger.debug(f"Write Index : {operation_dict['WRITE_INDEX']} -> Handle the packet: {packet}")
 
             if not option["M"]:
                 operation_dict["TOTAL_RESPONSES"] = option["NUM"]
@@ -160,7 +160,7 @@ class FileHandler(metaclass=CoapSingleton):
                     request.message_id
                 )
 
-                logger.debug(f"Send -> {response}")
+                # logger.debug(f"Send -> {response}")
 
                 index += 1
 
@@ -188,7 +188,7 @@ class FileHandler(metaclass=CoapSingleton):
 
                 if self.__transaction_pool.handle_congestions(response, index == len(paths)):
                     break
-
+                # logger.debug(f"Write Index : {request}")
                 self.__transaction_pool.add_transaction(
                     response,
                     request.message_id,

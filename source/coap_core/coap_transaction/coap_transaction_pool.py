@@ -24,7 +24,7 @@ class CoapTransactionPool(CoapSingletonBase):
         if self.is_overall_transaction_failed(packet):
             return True
 
-        while len(self.__transaction_dict) >= 5000:
+        while len(self.__transaction_dict) >= 100:
             pass
 
         if last_packet:

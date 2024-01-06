@@ -1,27 +1,63 @@
 import argparse
 
+import queue
+from _socket import IPPROTO_UDP
+from multiprocessing import Process, Queue
+
+from select import select
+from socket import socket, AF_INET, SOCK_DGRAM
+
+from coap_core.coap_utilities.coap_logger import logger, LogColor
 from share_drive_server.server_resource import ServerResource
 from source.coap_core.coap_worker.coap_worker_pool import CoapWorkerPool
-from source.coap_core.coap_resource.resource_manager import ResourceManager
 
 
-class Server(CoapWorkerPool):
+class Server:
     def __init__(self, ip_address, port):
-        super().__init__(ip_address, port)
+        self._skt = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
+        self._skt.bind((ip_address, port))
 
-        ResourceManager().set_root_path("/home/damir/coap/server/resources/")
-        ResourceManager().discover_resources()
-        ResourceManager().add_default_resource(ServerResource("share_drive"))
+        self._resource = ServerResource("share_drive", "/home/damir/coap/server/resources/")
+        self._processes_queues = {}
+        self._recv_queue = queue.Queue()
+
+    def listen(self):
+        try:
+            while True:
+                active_socket, _, _ = select([self._skt], [], [], 1)
+
+                if active_socket:
+                    data, address = self._skt.recvfrom(1152)
+                    self._recv_queue.put((data, address))
+                    if address not in self._processes_queues:
+                        logger.debug("Creating a new process", LogColor.CYAN)
+
+                        data_queue = Queue()
+
+                        pool = CoapWorkerPool(self._skt, self._resource, data_queue)
+                        client_process = Process(target=pool.start)
+                        client_process.start()
+
+                        self._processes_queues[address] = data_queue, client_process
+
+                    self._processes_queues[address][0].put((data, address))
+
+        except Exception as e:
+            for _, process in self._processes_queues.values():
+                process[1].terminate()
+                process[1].join()
+            raise e
 
 
 def main():
     parser = argparse.ArgumentParser(description='Server script with address and port arguments')
 
-    parser.add_argument('--server_address', type=str, default='192.168.1.102', help='Server address')
+    parser.add_argument('--server_address', type=str, default='127.0.0.1', help='Server address')
     parser.add_argument('--server_port', type=int, default=5683, help='Server port')
 
     args = parser.parse_args()
 
     Server(args.server_address, args.server_port).listen()
+
 
 main()

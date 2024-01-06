@@ -1,6 +1,8 @@
 import argparse
 import os
 import threading
+from _socket import IPPROTO_UDP
+from socket import socket, AF_INET, SOCK_DGRAM
 
 import questionary
 import readchar
@@ -20,13 +22,11 @@ from source.share_drive_client.client_resource import ClientResource
 
 class Client(CoapWorkerPool):
     def __init__(self, server_ip, server_port, ip_address, port):
-        super().__init__(ip_address, port)
+        skt = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
+        skt.bind((ip_address, port))
+        super().__init__(skt, ClientResource("downloads", "/home/damir/coap/client/resources/"))
 
-        self.add_background_thread(threading.Thread(target=self.client_cli))
-
-        ResourceManager().set_root_path("/home/damir/coap/client/")
-        ResourceManager().discover_resources()
-        ResourceManager().add_default_resource(ClientResource("downloads"))
+        self._add_background_thread(threading.Thread(target=self.client_cli))
 
         self.__server_ip = server_ip
         self.__server_port = server_port
@@ -125,7 +125,7 @@ class Client(CoapWorkerPool):
         coap_message.options[CoapOptionDelta.URI_PATH.value] = "share_drive"
         coap_message.skt = self._socket
         coap_message.sender_ip_port = (self.__server_ip, int(self.__server_port))
-        self.handle_internal_task(coap_message)
+        self._handle_internal_task(coap_message)
 
         CoapTransactionPool().wait_util_finish(coap_message)
 
@@ -137,7 +137,7 @@ class Client(CoapWorkerPool):
         coap_message.sender_ip_port = (self.__server_ip, int(self.__server_port))
         coap_message.needs_internal_computation = True
 
-        self.handle_internal_task(coap_message)
+        self._handle_internal_task(coap_message)
 
         CoapTransactionPool().wait_util_finish(coap_message)
 
@@ -160,7 +160,7 @@ class Client(CoapWorkerPool):
         coap_message.options[CoapOptionDelta.URI_PATH.value] = "share_drive"
         coap_message.skt = self._socket
         coap_message.sender_ip_port = (self.__server_ip, int(self.__server_port))
-        self.handle_internal_task(coap_message)
+        self._handle_internal_task(coap_message)
 
         CoapTransactionPool().wait_util_finish(coap_message)
 
@@ -178,7 +178,7 @@ def main():
 
     args = parser.parse_args()
 
-    logger.is_enabled = False
+    logger.is_enabled = True
     Client(
         args.server_address,
         args.server_port,

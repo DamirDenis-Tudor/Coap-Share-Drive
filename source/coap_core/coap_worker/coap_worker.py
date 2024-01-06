@@ -1,3 +1,5 @@
+import queue
+
 from contextlib import contextmanager
 from threading import Thread
 
@@ -5,10 +7,8 @@ from source.coap_core.coap_packet.coap_config import CoapOptionDelta, CoapCodeFo
 from source.coap_core.coap_packet.coap_packet import CoapPacket
 from source.coap_core.coap_packet.coap_templates import CoapTemplates
 from source.coap_core.coap_resource.resource_manager import ResourceManager
-from source.coap_core.coap_utilities.coap_queue import CoapQueue
 from source.coap_core.coap_utilities.coap_logger import logger
 from source.coap_core.coap_utilities.coap_timer import CoapTimer
-from source.share_drive_helpers.file_handler import FileHandler
 
 
 class CoapWorker(Thread, ):
@@ -17,8 +17,10 @@ class CoapWorker(Thread, ):
 
         self.__is_running = True
 
-        self._request_queue = CoapQueue()
+        self._request_queue = queue.Queue()
         self._task = CoapPacket()
+
+        # get rid of an owner here.
         self._owner = owner
         self._heavy_work = False
 
@@ -26,7 +28,7 @@ class CoapWorker(Thread, ):
         self._timer.reset()
 
     def get_queue_size(self):
-        return self._request_queue.size()
+        return self._request_queue.qsize()
 
     def get_idle_time(self):
         return self._timer.elapsed_time()

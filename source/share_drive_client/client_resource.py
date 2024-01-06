@@ -10,8 +10,8 @@ from source.share_drive_helpers.file_handler import FileHandler
 
 
 class ClientResource(Resource):
-    def __init__(self, path: str):
-        super().__init__(path)
+    def __init__(self, name: str, path):
+        super().__init__(name, path)
         self.__file_handler = FileHandler()
 
     def handle_get(self, request):

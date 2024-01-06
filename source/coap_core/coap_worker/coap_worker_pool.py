@@ -1,22 +1,19 @@
+import queue
 import sys
 import threading
-
-import socket
 import time
-from _socket import *
 from abc import ABC
 from select import select
-from socket import socket, AF_INET, SOCK_DGRAM
+from socket import socket
 
-from source.coap_core.coap_worker.coap_worker import CoapWorker
 from source.coap_core.coap_packet.coap_config import CoapType, CoapCodeFormat, CoapOptionDelta
-from source.coap_core.coap_packet.coap_templates import CoapTemplates
-from source.coap_core.coap_transaction.coap_transaction_pool import CoapTransactionPool
-from source.coap_core.coap_utilities.coap_queue import CoapQueue
-from source.coap_core.coap_utilities.coap_logger import logger, LogColor
-from threading import Event
 from source.coap_core.coap_packet.coap_packet import CoapPacket
-from source.coap_core.coap_utilities.coap_timer import CoapTimer
+from source.coap_core.coap_packet.coap_templates import CoapTemplates
+from source.coap_core.coap_resource.resource import Resource
+from source.coap_core.coap_resource.resource_manager import ResourceManager
+from source.coap_core.coap_transaction.coap_transaction_pool import CoapTransactionPool
+from source.coap_core.coap_utilities.coap_logger import logger, LogColor
+from source.coap_core.coap_worker.coap_worker import CoapWorker
 
 
 class CoapWorkerPool(ABC):
@@ -38,43 +35,43 @@ class CoapWorkerPool(ABC):
 
         return True
 
-    def __init__(self, ip_address: str, port: int):
-
+    def __init__(self, skt: socket, resource: Resource, receive_queue=None):
         self.name = f"WorkerPoll"
-
+        self.__is_running = True
         self._short_term_shared_work = {}
         self._long_term_shared_work = {}
         self._failed_requests = {}
 
-        self._socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
-        self._socket.bind((ip_address, port))
+        self._socket = skt
 
         self.__workers: list[CoapWorker] = []
 
-        self.__received_packets = CoapQueue()
-        self.__valid_coap_packets = CoapQueue()
+        self.__valid_coap_packets = queue.Queue()
+        if receive_queue:
+            self._received_packets = receive_queue
+        else:
+            self._received_packets = queue.Queue()
 
-        self.__event_check_idle = Event()
-        self.__event_handle_transactions = Event()
-        self.__event_deduplication = Event()
+        self.__idle_event = threading.Event()
+        self.__transaction_event = threading.Event()
+
         self.__stop_event = threading.Event()
 
-        self.__max_queue_size = 100000
+        self.__max_queue_size = 20000
         self.__allowed_idle_time = 60
 
         self.__background_threads: list[threading.Thread] = [
-            threading.Thread(target=self.check_idle_workers),
-            threading.Thread(target=self.coap_format_filter),
-            threading.Thread(target=self.deduplication_filter),
-            threading.Thread(target=self.handle_transactions),
+            threading.Thread(target=self.__coap_format_filter),
+            threading.Thread(target=self.__deduplication_filter),
+            threading.Thread(target=self.__handle_transactions),
+            threading.Thread(target=self.__handle_workers),
+            threading.Thread(target=self.__stop_safety)
         ]
 
-        self.__stopping_thread: threading.Thread = threading.Thread(target=self.__safe_stop)
-        self.__is_running = True
-
         self.__transaction_pool = CoapTransactionPool()
+        ResourceManager().add_default_resource(resource)
 
-    def add_background_thread(self, thread: threading.Thread):
+    def _add_background_thread(self, thread: threading.Thread):
         self.__background_threads.append(thread)
 
     def remove_short_term_work(self, work_data: tuple):
@@ -86,7 +83,7 @@ class CoapWorkerPool(ABC):
             self._long_term_shared_work.pop(work_data)
 
     @logger
-    def _create_worker(self) -> CoapWorker:
+    def __create_worker(self) -> CoapWorker:
         chosen_worker = CoapWorker(self)
         chosen_worker.start()
 
@@ -94,45 +91,39 @@ class CoapWorkerPool(ABC):
 
         return chosen_worker
 
-    def _choose_worker(self) -> CoapWorker:
+    def __choose_worker(self) -> CoapWorker:
         light_loaded_workers = filter(lambda worker: not worker.is_heavily_loaded(), self.__workers)
         available_workers = filter(lambda worker: worker.get_queue_size() < self.__max_queue_size, light_loaded_workers)
         chosen_worker = min(available_workers, default=None, key=lambda x: x.get_queue_size())
 
         if not chosen_worker:
-            new_worker = self._create_worker()
+            new_worker = self.__create_worker()
             return new_worker
 
         return chosen_worker
 
     @logger
-    def check_idle_workers(self):
-        while True:
-            self.__event_check_idle.wait()
+    def __handle_transactions(self):
+        while self.__is_running:
+            self.__transaction_event.wait(timeout=1)
+            CoapTransactionPool().solve_transactions()
+            self.__transaction_event.clear()
 
-            if not self.__is_running:
-                break
-
+    @logger
+    def __handle_workers(self):
+        while self.__is_running:
+            self.__idle_event.wait(timeout=60)
             for worker in self.__workers:
                 if worker.get_idle_time() > self.__allowed_idle_time and len(self.__workers) > 1:
                     self.__workers.remove(worker)
                     worker.stop()
-
-            self.__event_check_idle.clear()
-
-    @logger
-    def handle_transactions(self):
-        while True:
-            self.__event_handle_transactions.wait()
-            CoapTransactionPool().solve_transactions()
-            self.__event_handle_transactions.clear()
+            self.__idle_event.clear()
 
     @logger
-    def deduplication_filter(self):
+    def __deduplication_filter(self):
         while self.__is_running:
-            packet: CoapPacket = self.__valid_coap_packets.get()
-
-            with (CoapTimer()):
+            try:
+                packet: CoapPacket = self.__valid_coap_packets.get()
 
                 work = packet.short_term_work_id()
 
@@ -148,7 +139,7 @@ class CoapWorkerPool(ABC):
                 if (work not in self._short_term_shared_work
                         and long_term_work not in self._long_term_shared_work):
 
-                    self._choose_worker().submit_task(packet)
+                    self.__choose_worker().submit_task(packet)
 
                     if long_term_work:
                         self._long_term_shared_work[long_term_work] = time.time()
@@ -156,12 +147,14 @@ class CoapWorkerPool(ABC):
                         self._short_term_shared_work[work] = time.time()
                 else:
                     logger.debug(f"{self.name} Packet duplicated: \n {packet.__repr__()}")
+            except Exception as e:
+                logger.debug(e)
 
     @logger
-    def coap_format_filter(self):
+    def __coap_format_filter(self):
 
         while self.__is_running:
-            data: tuple[bytes, tuple] = self.__received_packets.get()
+            data: tuple[bytes, tuple] = self._received_packets.get()
             packet = CoapPacket.decode(data[0], data[1], self._socket)
             # verifying the integrity of the packet
             if CoapWorkerPool.__verify_format(packet):
@@ -200,11 +193,8 @@ class CoapWorkerPool(ABC):
 
                 self._socket.sendto(invalid_format.encode(), packet.sender_ip_port)
 
-    @logger
     def listen(self):
-        self.__stopping_thread.start()
-        for thread in self.__background_threads:
-            thread.start()
+        self.start()
 
         while self.__is_running:
             try:
@@ -212,36 +202,39 @@ class CoapWorkerPool(ABC):
 
                 if active_socket:
                     data, address = self._socket.recvfrom(1152)
-                    self.__received_packets.put((data, address))
-
-                self.__event_handle_transactions.set()
-                self.__event_check_idle.set()
+                    self._received_packets.put((data, address))
             except Exception:
                 pass
 
-        self.__stop_event.set()
+        self.stop()
 
-    def handle_internal_task(self, task: CoapPacket):
+    def _handle_internal_task(self, task: CoapPacket):
         # give unique token
         task.token = CoapWorkerPool.__gen_token()
         if task.needs_internal_computation:
-            self._create_worker().submit_task(task)
+            self.__create_worker().submit_task(task)
         self.__transaction_pool.add_transaction(task)
+
+    def start(self):
+        for thread in self.__background_threads:
+            thread.start()
 
     def stop(self):
         self.__stop_event.set()
 
     @logger
-    def __safe_stop(self):
+    def __stop_safety(self):
         self.__stop_event.wait()  # Set the event to signal threads to stop
 
         self.__is_running = False
 
         for worker in self.__workers:
-            worker.stop()
+            if worker != threading.current_thread():
+                worker.stop()
 
         for worker in self.__workers:
-            worker.join()
+            if worker != threading.current_thread():
+                worker.join()
 
         self._socket.close()
 
