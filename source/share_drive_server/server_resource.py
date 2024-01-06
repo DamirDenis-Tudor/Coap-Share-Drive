@@ -49,6 +49,9 @@ class ServerResource(Resource):
     def handle_fetch(self, request: CoapPacket):
         self.__file_handler.split_on_paths_and_send(request, self.get_path(), self.get_name())
 
+    def internal_handling(self, request: CoapPacket):
+        pass
+
     def non_method(self, request: CoapPacket):
         if request.code == CoapCodeFormat.SUCCESS_CONTENT.value():
             if CoapOptionDelta.LOCATION_PATH.value in request.options:  # response of upload

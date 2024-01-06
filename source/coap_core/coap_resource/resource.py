@@ -45,5 +45,9 @@ class Resource(ABC):
         pass
 
     @abstractmethod
+    def internal_handling(self, request: CoapPacket):
+        pass
+
+    @abstractmethod
     def non_method(self, request: CoapPacket):
         pass

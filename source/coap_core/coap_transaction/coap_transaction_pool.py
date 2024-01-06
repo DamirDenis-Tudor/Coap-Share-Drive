@@ -24,13 +24,13 @@ class CoapTransactionPool(CoapSingletonBase):
         if self.is_overall_transaction_failed(packet):
             return True
 
-        while len(self.__transaction_dict) >= 100:
-            time.sleep(0.0001)
+        while len(self.__transaction_dict) >= 5000:
+            pass
 
         if last_packet:
             while len(self.__transaction_dict) != 0:
-                time.sleep(0.0001)
-
+                pass
+            
         return False
 
     def add_transaction(self, packet: CoapPacket, parent_msg_id=0):

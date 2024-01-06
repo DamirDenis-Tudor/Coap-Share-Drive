@@ -17,7 +17,7 @@ class Server(CoapWorkerPool):
 def main():
     parser = argparse.ArgumentParser(description='Server script with address and port arguments')
 
-    parser.add_argument('--server_address', type=str, default='127.0.0.1', help='Server address')
+    parser.add_argument('--server_address', type=str, default='192.168.1.102', help='Server address')
     parser.add_argument('--server_port', type=int, default=5683, help='Server port')
 
     args = parser.parse_args()

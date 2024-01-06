@@ -1,5 +1,4 @@
 from contextlib import contextmanager
-from queue import Queue
 from threading import Thread
 
 from source.coap_core.coap_packet.coap_config import CoapOptionDelta, CoapCodeFormat
@@ -18,7 +17,7 @@ class CoapWorker(Thread, ):
 
         self.__is_running = True
 
-        self._request_queue = Queue()
+        self._request_queue = CoapQueue()
         self._task = CoapPacket()
         self._owner = owner
         self._heavy_work = False
@@ -27,7 +26,7 @@ class CoapWorker(Thread, ):
         self._timer.reset()
 
     def get_queue_size(self):
-        return self._request_queue.qsize()
+        return self._request_queue.size()
 
     def get_idle_time(self):
         return self._timer.elapsed_time()
@@ -88,7 +87,7 @@ class CoapWorker(Thread, ):
             return
 
         if task.needs_internal_computation:
-            resource.non_method(task)
+            resource.internal_handling(task)
         else:
             task_code = task.code
             if task_code == CoapCodeFormat.GET.value():

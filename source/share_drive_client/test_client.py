@@ -117,7 +117,7 @@ def main():
     parser = argparse.ArgumentParser(description='Client script with address and port arguments')
 
     # Server arguments
-    parser.add_argument('--server_address', '-sa', type=str, default='127.0.0.1', help='Server address')
+    parser.add_argument('--server_address', '-sa', type=str, default='10.2.0.46', help='Server address')
     parser.add_argument('--server_port', '-sp', type=int, default=5683, help='Server port')
 
     # Client arguments

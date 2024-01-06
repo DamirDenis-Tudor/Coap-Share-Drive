@@ -5,7 +5,6 @@ import socket
 import time
 from _socket import *
 from abc import ABC
-from queue import Queue
 from select import select
 from socket import socket, AF_INET, SOCK_DGRAM
 
@@ -52,15 +51,15 @@ class CoapWorkerPool(ABC):
 
         self.__workers: list[CoapWorker] = []
 
-        self.__received_packets = Queue()
-        self.__valid_coap_packets = Queue()
+        self.__received_packets = CoapQueue()
+        self.__valid_coap_packets = CoapQueue()
 
         self.__event_check_idle = Event()
         self.__event_handle_transactions = Event()
         self.__event_deduplication = Event()
         self.__stop_event = threading.Event()
 
-        self.__max_queue_size = 20000
+        self.__max_queue_size = 100000
         self.__allowed_idle_time = 60
 
         self.__background_threads: list[threading.Thread] = [
