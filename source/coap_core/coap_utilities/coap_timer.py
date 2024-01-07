@@ -1,6 +1,6 @@
 import time
 
-from source.coap_core.coap_utilities.coap_logger import logger
+from coap_core.coap_utilities.coap_logger import logger
 
 
 class CoapTimer:

@@ -4,7 +4,7 @@ import threading
 from enum import Enum
 from multiprocessing import current_process
 
-from source.coap_core.coap_utilities.coap_singleton import CoapSingleton, CoapSingletonBase
+from coap_core.coap_utilities.coap_singleton import CoapSingleton, CoapSingletonBase
 
 
 class LogDestination(Enum):
@@ -44,7 +44,7 @@ class CoapLogger(CoapSingletonBase):
         self.destination = destination
         self.log_file = None
         self.log_directory = "logs"
-        self.is_enabled = True
+        self.debug_mode = False
         self._lock = threading.Lock()
 
         if self.destination == LogDestination.FILE:
@@ -87,24 +87,24 @@ class CoapLogger(CoapSingletonBase):
             :param message:
             :param time:
         """
-        log_message = message
-        with self._lock:
-            if self.destination == LogDestination.CONSOLE:
-                if color is not None:
-                    log_message = f"{color.value}{log_message}{LogColor.RESET.value}"
-                print(log_message)
-
-    def debug(self, message, color=LogColor.GREEN, time=True):
-        if self.is_enabled:
-            current_time = datetime.datetime.now().strftime("%H:%M:%S")
-            if time:
-                log_message = f"{current_time} - {message}"
-            else:
-                log_message = message
+        if not self.debug_mode:
+            log_message = message
             with self._lock:
                 if self.destination == LogDestination.CONSOLE:
                     if color is not None:
                         log_message = f"{color.value}{log_message}{LogColor.RESET.value}"
+                    print(log_message)
+
+    def debug(self, message, color=LogColor.GREEN):
+        if self.debug_mode:
+            process_name = current_process().name
+            thread_name = threading.current_thread().name
+            current_time = datetime.datetime.now().strftime("%H:%M:%S")
+            log_message = f"{current_time} {process_name} -> {thread_name}:  {message}"
+            with self._lock:
+                if self.destination == LogDestination.CONSOLE:
+                    if color is not None:
+                        log_message = f"{color.value} {log_message} {LogColor.RESET.value}"
                     print(log_message)
                 elif self.destination == LogDestination.FILE:
                     with open(self.log_file, 'a') as log_file:
@@ -124,18 +124,14 @@ class CoapLogger(CoapSingletonBase):
         """
 
         def wrapper(*args, **kwargs):
-            process_name = current_process().name
-            thread_name = threading.current_thread().name
-
-            self.debug(f"{process_name} -> {thread_name} Calling function: {func.__name__} {args}", LogColor.MAGENTA)
+            self.debug(f"Calling function: {func.__name__} \n {args}", LogColor.MAGENTA)
             try:
                 result = func(*args, **kwargs)
                 if result is not None:
-                    self.debug(f"{process_name} -> {thread_name} Result of {func.__name__}: {result}", LogColor.BLUE)
+                    self.debug(f"Result of {func.__name__}: {result}", LogColor.BLUE)
                     return result
             except Exception as e:
-                self.debug(
-                    f"{process_name} -> {thread_name} Function {func.__name__} encountered an exception: {e}", LogColor.RED)
+                self.debug(f"Function {func.__name__} encountered an exception: {e}", LogColor.RED)
                 raise e
 
         return wrapper

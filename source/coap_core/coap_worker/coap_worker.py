@@ -3,26 +3,26 @@ import queue
 from contextlib import contextmanager
 from threading import Thread
 
-from source.coap_core.coap_packet.coap_config import CoapOptionDelta, CoapCodeFormat
-from source.coap_core.coap_packet.coap_packet import CoapPacket
-from source.coap_core.coap_packet.coap_templates import CoapTemplates
-from source.coap_core.coap_resource.resource_manager import ResourceManager
-from source.coap_core.coap_utilities.coap_logger import logger
-from source.coap_core.coap_utilities.coap_timer import CoapTimer
+from coap_core.coap_packet.coap_config import CoapOptionDelta, CoapCodeFormat
+from coap_core.coap_packet.coap_packet import CoapPacket
+from coap_core.coap_packet.coap_templates import CoapTemplates
+from coap_core.coap_resource.resource_manager import ResourceManager
+from coap_core.coap_utilities.coap_logger import logger
+from coap_core.coap_utilities.coap_timer import CoapTimer
 
 
 class CoapWorker(Thread, ):
-    def __init__(self, owner):
+    def __init__(self, shared_work: dict):
         super().__init__()
 
+        self.name = self.name.replace("Thread", "CoapWorkerThread")
+
         self.__is_running = True
+        self._heavy_work = False
 
         self._request_queue = queue.Queue()
-        self._task = CoapPacket()
 
-        # get rid of an owner here.
-        self._owner = owner
-        self._heavy_work = False
+        self._shared_work = shared_work
 
         self._timer = CoapTimer()
         self._timer.reset()
@@ -44,12 +44,7 @@ class CoapWorker(Thread, ):
 
             self._solve_task(task)
 
-            self._owner.remove_short_term_work(
-                task.short_term_work_id()
-            )
-            self._owner.remove_long_term_work(
-                task.long_term_work_id()
-            )
+            self._shared_work.pop(task.work_id())
 
     # @logger
     def stop(self):
@@ -80,7 +75,7 @@ class CoapWorker(Thread, ):
 
         resource = ResourceManager().get_default_resource()
         if not resource:
-            resource = ResourceManager().get_resource(task.options[CoapOptionDelta.URI_PATH.value])
+            resource = ResourceManager().get_resource(task.options[CoapOptionDelta.URI_PATH.value].split("/")[0])
 
         if not resource:
             logger.log("URI PATH does not exist")

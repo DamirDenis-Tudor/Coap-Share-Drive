@@ -1,7 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 
-from source.coap_core.coap_packet.coap_packet import CoapPacket
+from coap_core.coap_packet.coap_packet import CoapPacket
 
 
 class Resource(ABC):

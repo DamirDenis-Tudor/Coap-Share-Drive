@@ -10,14 +10,13 @@ from prompt_toolkit.shortcuts import CompleteStyle
 from prompt_toolkit.styles import Style
 from pyfiglet import Figlet
 
-from source.coap_core.coap_transaction.coap_transaction_pool import CoapTransactionPool
-from source.coap_core.coap_packet.coap_config import CoapOptionDelta
-from source.coap_core.coap_packet.coap_templates import CoapTemplates
-from source.share_drive_helpers.file_handler import FileHandler
-from source.coap_core.coap_resource.resource_manager import ResourceManager
-from source.coap_core.coap_utilities.coap_logger import logger, LogColor
-from source.coap_core.coap_worker.coap_worker_pool import CoapWorkerPool
-from source.share_drive_client.client_resource import ClientResource
+from coap_core.coap_transaction.coap_transaction_pool import CoapTransactionPool
+from coap_core.coap_packet.coap_config import CoapOptionDelta
+from coap_core.coap_packet.coap_templates import CoapTemplates
+from coap_core.coap_utilities.coap_logger import logger, LogColor
+from coap_core.coap_worker.coap_worker_pool import CoapWorkerPool
+from share_drive_client.client_resource import ClientResource
+from share_drive_helpers.file_assembler import FileAssembler
 
 
 class Client(CoapWorkerPool):
@@ -70,7 +69,7 @@ class Client(CoapWorkerPool):
                     file_name = questionary.autocomplete(
                         "Enter the file name to download: ",
                         style=custom_style_genius,
-                        choices=FileHandler().get_files_list(),
+                        choices=FileAssembler().get_content(),
                     ).ask()
 
                     local_path = questionary.path(
@@ -90,7 +89,7 @@ class Client(CoapWorkerPool):
 
                     remote_path = questionary.autocomplete(
                         "Enter the remote path to upload the file: ",
-                        FileHandler().get_folders_list(),
+                        FileAssembler().get_folders_list(),
                         style=custom_style_genius
                     ).ask()
 
@@ -102,8 +101,11 @@ class Client(CoapWorkerPool):
                     # Add prompts for moving
                     pass
                 elif command == "Delete":
-                    # Add prompts for deleting
-                    pass
+                    remote_path = questionary.autocomplete(
+                        "Enter the remote path to upload the file: ",
+                        FileAssembler().get_folders_list(),
+                        style=custom_style_genius
+                    ).ask()
                 elif command == "Settings":
                     pass
                 elif command == "Exit":
@@ -125,14 +127,16 @@ class Client(CoapWorkerPool):
         coap_message.options[CoapOptionDelta.URI_PATH.value] = "share_drive"
         coap_message.skt = self._socket
         coap_message.sender_ip_port = (self.__server_ip, int(self.__server_port))
+
+        FileAssembler().set_save_path(local_path)
         self._handle_internal_task(coap_message)
 
         CoapTransactionPool().wait_util_finish(coap_message)
 
-    def upload_file(self, file_path, file_name):
+    def upload_file(self, file_path, remote_path):
         coap_message = CoapTemplates.UPLOAD.value()
         coap_message.options[CoapOptionDelta.LOCATION_PATH.value] = file_path
-        coap_message.options[CoapOptionDelta.URI_PATH.value] = "share_drive"
+        coap_message.options[CoapOptionDelta.URI_PATH.value] = f"share_drive:{remote_path}"
         coap_message.skt = self._socket
         coap_message.sender_ip_port = (self.__server_ip, int(self.__server_port))
         coap_message.needs_internal_computation = True
@@ -149,12 +153,17 @@ class Client(CoapWorkerPool):
         # Implement code for moving a file on the server
         pass
 
-    def delete_file(self):
-        # Implement code for deleting a file on the server
-        pass
+    def delete_file(self, file_path):
+        coap_message = CoapTemplates.DELETE.value()
+        coap_message.options[CoapOptionDelta.URI_PATH.value] = "share_drive"
+        coap_message.skt = self._socket
+        coap_message.sender_ip_port = (self.__server_ip, int(self.__server_port))
+        self._handle_internal_task(coap_message)
+
+        CoapTransactionPool().wait_util_finish(coap_message)
 
     def fetch_server_data(self):
-        FileHandler().clear_content()
+        FileAssembler().clear_content()
 
         coap_message = CoapTemplates.FETCH.value()
         coap_message.options[CoapOptionDelta.URI_PATH.value] = "share_drive"
@@ -178,7 +187,6 @@ def main():
 
     args = parser.parse_args()
 
-    logger.is_enabled = True
     Client(
         args.server_address,
         args.server_port,

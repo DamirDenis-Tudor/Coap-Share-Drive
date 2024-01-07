@@ -6,14 +6,12 @@ from socket import socket, AF_INET, SOCK_DGRAM
 import questionary
 from pyfiglet import Figlet
 
-from source.coap_core.coap_transaction.coap_transaction_pool import CoapTransactionPool
-from source.coap_core.coap_packet.coap_config import CoapOptionDelta
-from source.coap_core.coap_packet.coap_templates import CoapTemplates
-from source.share_drive_helpers.file_handler import FileHandler
-from source.coap_core.coap_resource.resource_manager import ResourceManager
-from source.coap_core.coap_utilities.coap_logger import logger, LogColor
-from source.coap_core.coap_worker.coap_worker_pool import CoapWorkerPool
-from source.share_drive_client.client_resource import ClientResource
+from coap_core.coap_transaction.coap_transaction_pool import CoapTransactionPool
+from coap_core.coap_packet.coap_config import CoapOptionDelta
+from coap_core.coap_packet.coap_templates import CoapTemplates
+from coap_core.coap_utilities.coap_logger import logger, LogColor
+from coap_core.coap_worker.coap_worker_pool import CoapWorkerPool
+from share_drive_client.client_resource import ClientResource
 
 
 class TestClient(CoapWorkerPool):
@@ -46,7 +44,7 @@ class TestClient(CoapWorkerPool):
             #     ]
             # ).ask()
 
-            command = "Download"
+            command = "Upload"
 
             if command == "Download":
                 #file_name = questionary.path("Enter the file name to download: ").ask()
@@ -54,7 +52,7 @@ class TestClient(CoapWorkerPool):
                 #self.download_file(file_name, local_path)
                 coap_message = CoapTemplates.DOWNLOAD.value()
                 coap_message.options[
-                    CoapOptionDelta.LOCATION_PATH.value] = "/test (copy).webm"
+                    CoapOptionDelta.LOCATION_PATH.value] = "/dummy"
                 coap_message.options[CoapOptionDelta.URI_PATH.value] = "share_drive"
                 coap_message.skt = self._socket
                 coap_message.sender_ip_port = (self.__server_ip, int(self.__server_port))
@@ -67,13 +65,13 @@ class TestClient(CoapWorkerPool):
                 # self.upload_file(local_file_path, remote_path)
                 coap_message = CoapTemplates.UPLOAD.value()
                 coap_message.options[
-                    CoapOptionDelta.LOCATION_PATH.value] = "/home/damir/coap/client/resources/downloads/test.webm"
+                    CoapOptionDelta.LOCATION_PATH.value] = "/dummy:damir/.fonts/"
                 coap_message.options[CoapOptionDelta.URI_PATH.value] = "share_drive"
                 coap_message.skt = self._socket
                 coap_message.sender_ip_port = (self.__server_ip, int(self.__server_port))
                 coap_message.needs_internal_computation = True
                 self._handle_internal_task(coap_message)
-                logger.log("Seeend")
+                logger.log("Seeen2222222d")
                 break
             elif command == "Rename":
                 # Add prompts for renaming
@@ -84,14 +82,14 @@ class TestClient(CoapWorkerPool):
             elif command == "Delete":
                 # Add prompts for deleting
                 pass
-            elif command == "List files":
+            elif command == "Fetch":
                 self.fetch_server_data()
                 break
             elif command == "Exit":
                 break
 
     def download_file(self):
-        # Implement code for downloading a file from source.the server
+        # Implement code for downloading a file from the server
         pass
 
     def upload_file(self, file_path, file_name):
@@ -117,8 +115,6 @@ class TestClient(CoapWorkerPool):
         coap_message.sender_ip_port = (self.__server_ip, int(self.__server_port))
         self._handle_internal_task(coap_message)
         CoapTransactionPool().wait_util_finish(coap_message)
-        h = FileHandler()
-        logger.log(h.get_files_list())
 
 
 def main():
@@ -134,7 +130,6 @@ def main():
 
     args = parser.parse_args()
 
-    logger.is_enabled = True
     TestClient(
         args.server_address,
         args.server_port,

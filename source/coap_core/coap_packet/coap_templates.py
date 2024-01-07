@@ -1,8 +1,8 @@
 from copy import deepcopy
 from enum import Enum
 
-from source.coap_core.coap_packet.coap_config import CoapType, CoapCodeFormat, CoapContentFormat, CoapOptionDelta
-from source.coap_core.coap_packet.coap_packet import CoapPacket
+from coap_core.coap_packet.coap_config import CoapType, CoapCodeFormat, CoapContentFormat, CoapOptionDelta
+from coap_core.coap_packet.coap_packet import CoapPacket
 
 
 class CoapTemplates(Enum):
@@ -14,7 +14,7 @@ class CoapTemplates(Enum):
         code=CoapCodeFormat.GET.value(),
         message_id=0,
         options={
-            CoapOptionDelta.BLOCK1.value: 6,  # block size
+            CoapOptionDelta.BLOCK2.value: 6,  # block size
             CoapOptionDelta.URI_PATH.value: "<UNDEFINED>",
             CoapOptionDelta.LOCATION_PATH.value: "<UNDEFINED>"
         },
@@ -32,7 +32,8 @@ class CoapTemplates(Enum):
             CoapOptionDelta.URI_PATH.value: "<UNDEFINED>",
             CoapOptionDelta.LOCATION_PATH.value: "<UNDEFINED>"
         },
-        payload=""
+        payload="",
+        internal_computation=True
     )
 
     MOVE = CoapPacket(
@@ -69,6 +70,7 @@ class CoapTemplates(Enum):
         code=CoapCodeFormat.FETCH.value(),
         message_id=0,
         options={
+            CoapOptionDelta.BLOCK2.value: 6,  # block size
             CoapOptionDelta.URI_PATH.value: "<UNDEFINED>",
         },
         payload=""
@@ -154,19 +156,17 @@ class CoapTemplates(Enum):
         payload=""
     )
 
-    SUCCESS_VALID_ACK = CoapPacket(
+    SUCCESS_CONTINUE_ACK = CoapPacket(
         version=1,
         message_type=CoapType.ACK.value,
         token=b"",
-        code=CoapCodeFormat.SUCCESS_VALID.value(),
+        code=CoapCodeFormat.SUCCESS_CONTINUE.value(),
         message_id=0,
-        options={
-            CoapOptionDelta.CONTENT_FORMAT.value: CoapContentFormat.TEXT_PLAIN_UTF8.value,
-        },
-        payload=""
+        options={},
+        payload="",
     )
 
-    BYTES_RESPONSE = CoapPacket(
+    CONTENT_BYTES_RESPONSE = CoapPacket(
         version=1,
         message_type=CoapType.CON.value,
         token=b"",
@@ -175,9 +175,8 @@ class CoapTemplates(Enum):
         options={
             CoapOptionDelta.LOCATION_PATH.value: "",
             CoapOptionDelta.CONTENT_FORMAT.value: CoapContentFormat.APPLICATION_OCTET_STREAM.value,
-            CoapOptionDelta.BLOCK2.value: 6,  # block size
         },
-        payload=""
+        payload="",
     )
 
     STR_PATH_RESPONSE = CoapPacket(

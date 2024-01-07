@@ -1,4 +1,4 @@
-from source.coap_core.coap_utilities.coap_singleton import CoapSingleton
+from coap_core.coap_utilities.coap_singleton import CoapSingleton
 
 
 class Test1(metaclass=CoapSingleton):

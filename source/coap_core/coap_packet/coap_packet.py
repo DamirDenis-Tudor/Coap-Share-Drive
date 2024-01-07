@@ -2,7 +2,7 @@ import json
 from copy import deepcopy
 from socket import socket
 
-from source.coap_core.coap_packet.coap_config import CoapOptionDelta, CoapContentFormat
+from coap_core.coap_packet.coap_config import CoapOptionDelta, CoapContentFormat
 
 
 class CoapPacket:
@@ -16,7 +16,7 @@ class CoapPacket:
     """
 
     @staticmethod
-    def decode_option_block(option) -> dict:
+    def decode_option_block(option) -> dict | None:
         """
         Decode an option block value into a dictionary of its components.
 
@@ -26,6 +26,9 @@ class CoapPacket:
         Returns:
         - dict: A dictionary containing the decoded components - {'SZX': szx, 'M': m, 'NUM': num, 'BLOCK_SIZE': actual_block_size}.
         """
+        if not option:
+            return None
+
         # Extracting individual bits using bit masking and shifting
         num = option >> 4
         m = (option >> 3) & 0b1
@@ -62,9 +65,9 @@ class CoapPacket:
 
         Based on the option delta/value length the format will use or not the extended field.
         - When option delta exceeds allowed value|12| there may be need of some adjustments:
-            - |13 <= delta_value < 269|: the most significant 4 bits from source.the first byte will be set to |13|;
+            - |13 <= delta_value < 269|: the most significant 4 bits from the first byte will be set to |13|;
               the next step is to use the first byte of the extended option delta and set it to: |delta_value - 13|;
-            - |269 <= delta_value <= 65804|: the most significant 4 bits from source.the first byte must be set |14|;
+            - |269 <= delta_value <= 65804|: the most significant 4 bits from the first byte must be set |14|;
               the next step is to use the all 2 bytes of the extended option delta and set it to: |delta_value - 269|;
         - The same logic applies for option_value_length
 
@@ -151,8 +154,8 @@ class CoapPacket:
             return int.from_bytes(option_value, byteorder='big')
 
     def __init__(self, version=0, message_type=0, token=b"", code=0,
-                 message_id=0, options=None, payload: bytes | str = None, sender_ip_port: tuple = (),
-                 skt: socket = None):
+                 message_id=0, options=None, payload: bytes | str = None,
+                 internal_computation=False, sender_ip_port: tuple = (), skt: socket = None):
         """
         Initializes a CoAPPacket instance with the provided parameters.
 
@@ -165,53 +168,55 @@ class CoapPacket:
             options (dict): Dictionary of CoAP options.
             payload (bytes): Payload of the CoAP packet.
         """
-        if version == 0:
-            self.is_dummy = True
-        else:
-            self.is_dummy = False
-
-        self.needs_internal_computation = False
-
         self.version = version
         self.message_type = message_type
         self.token = token
         self.code = code
         self.message_id = message_id
         self.options = options or {}
-        self.__payload = payload or b""
+        self.payload = payload or b""
         self.sender_ip_port = sender_ip_port
         self.skt = skt
 
-    @property
-    def payload(self):
-        return self.__payload
+        self.needs_internal_computation = internal_computation
 
-    @payload.setter
-    def payload(self, value: float):
-        self.__payload = value
+    def has_option_block(self):
+        return CoapOptionDelta.BLOCK1.value in self.options or CoapOptionDelta.BLOCK2.value in self.options
 
     def get_block_id(self) -> int | None:
         if CoapOptionDelta.BLOCK1.value in self.options:
-            return None  # todo
+            return CoapPacket.decode_option_block(self.options[CoapOptionDelta.BLOCK1.value])["NUM"]
         elif CoapOptionDelta.BLOCK2.value in self.options:
             return CoapPacket.decode_option_block(self.options[CoapOptionDelta.BLOCK2.value])["NUM"]
         else:
             return None
 
-    def has_option_block(self):
-        return CoapOptionDelta.BLOCK1.value in self.options or CoapOptionDelta.BLOCK2.value in self.options
-
-    def short_term_work_id(self, message_id_extension=None) -> tuple:
-        if message_id_extension:
-            return self.sender_ip_port, self.token, self.message_id, message_id_extension
-        return self.sender_ip_port, self.token, self.message_id
-
-    def long_term_work_id(self) -> tuple:
-        block_id = self.get_block_id()
-        if block_id:
-            return self.short_term_work_id(), block_id
+    def get_option_code(self):
+        if CoapOptionDelta.BLOCK1.value in self.options:
+            return CoapOptionDelta.BLOCK1.value
+        elif CoapOptionDelta.BLOCK2.value in self.options:
+            return CoapOptionDelta.BLOCK2.value
         else:
-            return self.short_term_work_id()
+            return None
+
+    def get_size_code(self):
+        if CoapOptionDelta.SIZE1.value in self.options:
+            return CoapOptionDelta.SIZE1.value
+        elif CoapOptionDelta.SIZE2.value in self.options:
+            return CoapOptionDelta.SIZE2.value
+        else:
+            return None
+
+    def get_size_code_based_on_option(self):
+        if CoapOptionDelta.BLOCK1.value in self.options:
+            return CoapOptionDelta.SIZE1.value
+        elif CoapOptionDelta.BLOCK2.value in self.options:
+            return CoapOptionDelta.SIZE2.value
+        else:
+            return None
+
+    def work_id(self) -> tuple:
+        return self.sender_ip_port, self.token, self.message_id, self.get_block_id()
 
     def general_work_id(self) -> tuple:
         return self.sender_ip_port, self.token
@@ -278,8 +283,8 @@ class CoapPacket:
         Decode a byte representation of a CoAP packet.
 
         This class method decodes a byte representation of a CoAP packet into a CoapPacket instance.
-        It extracts information from source.the CoAP header, including the version, message type, token length,
-        code, and message ID. The token is then retrieved from source.the byte representation, followed by the
+        It extracts information from the CoAP header, including the version, message type, token length,
+        code, and message ID. The token is then retrieved from the byte representation, followed by the
         options, which are processed using the _interpret_option_value helper method. The payload, if present,
         is also extracted. The decoded CoapPacket instance is then returned.
 
@@ -345,7 +350,7 @@ class CoapPacket:
                 payload = payload.decode("utf-8")
             elif options[CoapOptionDelta.CONTENT_FORMAT.value] == CoapContentFormat.APPLICATION_JSON.value:
                 payload = json.loads(payload)
-        return cls(version, message_type, token, code, message_id, options, payload, address, skt)
+        return cls(version, message_type, token, code, message_id, options, payload, False, address, skt)
 
     def __repr__(self):
         """

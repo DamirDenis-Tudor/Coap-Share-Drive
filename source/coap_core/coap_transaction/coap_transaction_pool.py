@@ -1,10 +1,11 @@
 import threading
 import time
 
-from source.coap_core.coap_utilities.coap_singleton import CoapSingletonBase
-from source.coap_core.coap_packet.coap_packet import CoapPacket
-from source.coap_core.coap_transaction.coap_transaction import CoapTransaction
-from source.coap_core.coap_utilities.coap_timer import CoapTimer
+from coap_core.coap_packet.coap_config import CoapCodeFormat
+from coap_core.coap_utilities.coap_singleton import CoapSingletonBase
+from coap_core.coap_packet.coap_packet import CoapPacket
+from coap_core.coap_transaction.coap_transaction import CoapTransaction
+from coap_core.coap_utilities.coap_timer import CoapTimer
 
 
 class CoapTransactionPool(CoapSingletonBase):
@@ -30,7 +31,7 @@ class CoapTransactionPool(CoapSingletonBase):
         if last_packet:
             while len(self.__transaction_dict) != 0:
                 pass
-            
+
         return False
 
     def add_transaction(self, packet: CoapPacket, parent_msg_id=0):
@@ -39,7 +40,7 @@ class CoapTransactionPool(CoapSingletonBase):
 
         transaction = CoapTransaction(packet, parent_msg_id)
 
-        key = packet.short_term_work_id(packet.get_block_id())
+        key = packet.work_id()
 
         # An acknowledgment for a packet might be received earlier
         # than the moment when the transaction is added to the pool.
@@ -47,7 +48,7 @@ class CoapTransactionPool(CoapSingletonBase):
             self.__transaction_dict[key] = transaction
 
     def is_transaction_finished(self, packet: CoapPacket):
-        key = packet.short_term_work_id(packet.get_block_id())
+        key = packet.work_id()
         return key in self.__finished_transactions
 
     def solve_transactions(self):
@@ -80,10 +81,7 @@ class CoapTransactionPool(CoapSingletonBase):
                 self.__finished_transactions.clear()
 
     def finish_transaction(self, packet: CoapPacket):
-        if packet.payload == b'':
-            key = packet.short_term_work_id()
-        else:
-            key = packet.short_term_work_id(int(packet.payload))
+        key = packet.work_id()
 
         self.__finished_transactions[key] = time.time()
 

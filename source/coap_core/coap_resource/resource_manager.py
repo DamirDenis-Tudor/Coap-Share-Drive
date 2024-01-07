@@ -1,8 +1,8 @@
 import os
 
 
-from source.coap_core.coap_utilities.coap_singleton import CoapSingletonBase
-from source.coap_core.coap_resource.resource import Resource
+from coap_core.coap_utilities.coap_singleton import CoapSingletonBase
+from coap_core.coap_resource.resource import Resource
 
 
 class ResourceManager(CoapSingletonBase):
