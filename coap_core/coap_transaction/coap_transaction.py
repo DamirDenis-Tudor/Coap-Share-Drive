@@ -3,19 +3,35 @@ from coap_core.coap_packet.coap_templates import CoapTemplates
 from coap_core.coap_utilities.coap_logger import logger
 from coap_core.coap_utilities.coap_timer import CoapTimer
 
-
 class CoapTransaction:
+    """
+    The `CoapTransaction` class represents a CoAP transaction and handles retransmission logic.
+
+    Note:
+    - This class assumes the presence of the `CoapPacket`, `CoapTimer`, `CoapTemplates`, and `logger` entities.
+    - The `run_transaction` method implements the retransmission logic based on CoAP specifications.
+    """
+
+    # Class Constants
     ACK_TIMEOUT = 2
     ACK_RANDOM_FACTOR = 1.5
     MAX_RETRANSMIT = 4
     MAX_RETRANSMISSION_SPAN = (ACK_TIMEOUT * ((2 ** MAX_RETRANSMIT) - 1) * ACK_RANDOM_FACTOR)
     MAX_RETRANSMISSION_WAIT = (ACK_TIMEOUT * ((2 ** (MAX_RETRANSMIT + 1)) - 1) * ACK_RANDOM_FACTOR)
 
+    # Transaction States
     NO_ACTION = 0
     RETRANSMISSION = 1
     FAILED_TRANSACTION = 2
 
+    # Constructor
     def __init__(self, request: CoapPacket, parent_msg_id: int):
+        """
+        Initializes a CoapTransaction instance.
+
+        :param request: The CoAP request packet.
+        :param parent_msg_id: The parent message ID.
+        """
         self.__request: CoapPacket = request
         self.__parent_msg_id = parent_msg_id
         self.__timer: CoapTimer = CoapTimer().reset()
@@ -23,6 +39,7 @@ class CoapTransaction:
         self.__transmit_time_span = 0
         self.__retransmission_counter = 0
 
+    # Properties
     @property
     def request(self) -> CoapPacket:
         return self.__request
@@ -59,7 +76,13 @@ class CoapTransaction:
     def retransmission_counter(self, value: int):
         self.__retransmission_counter = value
 
+    # Methods
     def run_transaction(self) -> int:
+        """
+        Runs the CoAP transaction, handling retransmissions and checking for failure.
+
+        :return: Transaction state (NO_ACTION, RETRANSMISSION, FAILED_TRANSACTION).
+        """
         if self.__timer.elapsed_time() > self.__ack_timeout:
             self.__transmit_time_span += self.__timer.elapsed_time()
 
@@ -80,7 +103,7 @@ class CoapTransaction:
                 return CoapTransaction.FAILED_TRANSACTION
 
             self.__request.skt.sendto(self.__request.encode(), self.__request.sender_ip_port)
-            logger.debug(f"Retrasmission of {self.__request}")
+            logger.debug(f"Retransmission of {self.__request}")
             return CoapTransaction.RETRANSMISSION
 
         return CoapTransaction.NO_ACTION

@@ -180,3 +180,22 @@ class CoapContentFormat(Enum):
             if member.value == item:
                 return True
         return False
+
+
+CURRENT_TOKEN = -1
+
+
+def gen_token() -> bytes:
+    global CURRENT_TOKEN
+    CURRENT_TOKEN += 1
+    return int(CURRENT_TOKEN).to_bytes()
+
+
+def verify_format(task) -> bool:
+    if (task.version != 1
+            or not CoapType.is_valid(task.message_type)
+            or not CoapCodeFormat.is_valid(task.code)
+            or not CoapOptionDelta.is_valid(task.options)):
+        return False
+
+    return True

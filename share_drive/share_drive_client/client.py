@@ -20,13 +20,35 @@ from share_drive.share_drive_helpers.drive_templates import DriveTemplates
 
 
 def clean_terminal():
+    """
+    Clears the terminal screen and displays the CoAP Drive Client banner.
+    """
     os.system('clear')
     os.chdir('/home')
     logger.log(Figlet(font="standard", width=400).renderText("Coap Drive Client"), color=LogColor.BLUE)
 
 
 class Client(CoapWorkerPool):
+    """
+    Represents the CoAP Drive Client.
+
+    Args:
+        server_ip (str): The IP address of the CoAP server.
+        server_port (int): The port of the CoAP server.
+        ip_address (str): The IP address of the client.
+        port (int): The port of the client.
+    """
+
     def __init__(self, server_ip, server_port, ip_address, port):
+        """
+        Initializes the CoAP Drive Client.
+
+        Args:
+            server_ip (str): The IP address of the CoAP server.
+            server_port (int): The port of the CoAP server.
+            ip_address (str): The IP address of the client.
+            port (int): The port of the client.
+        """
         skt = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
         skt.bind((ip_address, port))
         super().__init__(skt, ClientResource("downloads", f"{os.path.expanduser('~')}/coap/server/resources/"))
@@ -35,7 +57,7 @@ class Client(CoapWorkerPool):
 
         self.__server_ip = server_ip
         self.__server_port = server_port
-        self.__style = self.__style = Style(
+        self.__style = Style(
             [
                 ("separator", "fg:#cc5454"),
                 ("qmark", "fg:#673ab7 bold"),
@@ -50,6 +72,9 @@ class Client(CoapWorkerPool):
         )
 
     def download_file(self):
+        """
+        Initiates the process of downloading a file from the CoAP server.
+        """
         os.chdir(os.path.expanduser("~"))
         content = DriveAssembler().get_content()
         if content:
@@ -79,6 +104,9 @@ class Client(CoapWorkerPool):
             logger.log("> There is nothing to be downloaded.", LogColor.YELLOW)
 
     def upload_file(self):
+        """
+        Initiates the process of uploading a file to the CoAP server.
+        """
         os.chdir(os.path.expanduser("~"))
         local_file_path = questionary.path(
             "Enter the local file path to upload: ",
@@ -105,6 +133,9 @@ class Client(CoapWorkerPool):
         CoapTransactionPool().wait_util_finish(coap_message)
 
     def rename_file(self):
+        """
+        Initiates the process of renaming a file on the CoAP server.
+        """
         content = DriveAssembler().get_content()
         if content:
             file_name = questionary.autocomplete(
@@ -132,6 +163,9 @@ class Client(CoapWorkerPool):
             logger.log("> There is nothing to be renamed.", LogColor.YELLOW)
 
     def move_file(self):
+        """
+        Initiates the process of moving a file on the CoAP server.
+        """
         content = DriveAssembler().get_content()
         if content:
             file_path = questionary.autocomplete(
@@ -160,6 +194,9 @@ class Client(CoapWorkerPool):
             logger.log("> There is nothing to be moved.", LogColor.YELLOW)
 
     def delete_file(self):
+        """
+        Initiates the process of deleting a file on the CoAP server.
+        """
         content = DriveAssembler().get_content()
         if content:
             file_path = questionary.autocomplete(
@@ -179,6 +216,9 @@ class Client(CoapWorkerPool):
             logger.log("> There is nothing to be deleted.", LogColor.YELLOW)
 
     def fetch_server_data(self):
+        """
+        Fetches data from the CoAP server and updates the client's local representation.
+        """
         DriveAssembler().clear_content()
 
         coap_message = DriveTemplates.FETCH.value()
@@ -190,6 +230,9 @@ class Client(CoapWorkerPool):
         CoapTransactionPool().wait_util_finish(coap_message)
 
     def client_cli(self):
+        """
+        Implements the command-line interface (CLI) for the CoAP Drive Client.
+        """
         clean_terminal()
         try:
             choices = ["Download", "Upload", "Rename", "Move", "Delete", "Exit"]
@@ -220,6 +263,9 @@ class Client(CoapWorkerPool):
 
 
 def main():
+    """
+    Main function to parse command-line arguments and start the CoAP Drive Client.
+    """
     parser = argparse.ArgumentParser(description='Client script with address and port arguments')
 
     # Server arguments

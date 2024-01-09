@@ -12,30 +12,79 @@ from coap_core.coap_transaction.coap_transaction_pool import CoapTransactionPool
 
 
 class ClientResource(Resource):
+    """
+    Represents a client-side CoAP resource.
+
+    The logic will be tight coupled with the logic from the sever/proxy side.
+    """
+
     def __init__(self, name: str, path):
+        """
+        Initializes the ClientResource instance.
+
+        Args:
+            name (str): The name of the resource.
+            path: The path associated with the resource.
+        """
         super().__init__(name, path)
 
     def handle_get(self, request):
+        """
+        Handles GET requests on the client-side resource.
+
+        Args:
+            request (CoapPacket): The CoAP packet representing the incoming request.
+        """
         invalid_request = CoapTemplates.NOT_IMPLEMENTED.value_with(request.token, request.message_id)
         request.skt.sendto(invalid_request.encode(), request.sender_ip_port)
 
     def handle_post(self, request):
+        """
+        Handles POST requests on the client-side resource.
+
+        Args:
+            request (CoapPacket): The CoAP packet representing the incoming request.
+        """
         invalid_request = CoapTemplates.NOT_IMPLEMENTED.value_with(request.token, request.message_id)
         request.skt.sendto(invalid_request.encode(), request.sender_ip_port)
 
     def handle_put(self, request):
+        """
+        Handles PUT requests on the client-side resource.
+
+        Args:
+            request (CoapPacket): The CoAP packet representing the incoming request.
+        """
         invalid_request = CoapTemplates.NOT_IMPLEMENTED.value_with(request.token, request.message_id)
         request.skt.sendto(invalid_request.encode(), request.sender_ip_port)
 
     def handle_delete(self, request):
+        """
+        Handles DELETE requests on the client-side resource.
+
+        Args:
+            request (CoapPacket): The CoAP packet representing the incoming request.
+        """
         invalid_request = CoapTemplates.NOT_IMPLEMENTED.value_with(request.token, request.message_id)
         request.skt.sendto(invalid_request.encode(), request.sender_ip_port)
 
     def handle_fetch(self, request: CoapPacket):
+        """
+        Handles FETCH requests on the client-side resource.
+
+        Args:
+            request (CoapPacket): The CoAP packet representing the incoming request.
+        """
         invalid_request = CoapTemplates.NOT_IMPLEMENTED.value_with(request.token, request.message_id)
         request.skt.sendto(invalid_request.encode(), request.sender_ip_port)
 
-    def internal_handling(self, request: CoapPacket):
+    def handle_internal(self, request: CoapPacket):
+        """
+        Handles internal operations on the client-side resource.
+
+        Args:
+            request (CoapPacket): The CoAP packet representing the internal operation request.
+        """
         path = request.options[CoapOptionDelta.LOCATION_PATH.value]
         if not DriveUtilities.file_exists(path) and not DriveUtilities.folder_exists(path):
             logger.debug("Invalid_PATH")
@@ -44,7 +93,13 @@ class ClientResource(Resource):
                 pass
             DriveSpliter().split_on_bytes_and_send(request, path)
 
-    def non_method(self, request: CoapPacket):
+    def handle_response(self, request: CoapPacket):
+        """
+        Handles responses on the client-side resource.
+
+        Args:
+            request (CoapPacket): The CoAP packet representing the response.
+        """
         os.chdir(self.get_path())
         if request.code == CoapCodeFormat.SUCCESS_CONTENT.value():
             if CoapOptionDelta.LOCATION_PATH.value in request.options:
@@ -52,4 +107,5 @@ class ClientResource(Resource):
                 DriveAssembler().handle_packets(request, path)
             else:
                 DriveAssembler().handle_paths(request)
+
 
