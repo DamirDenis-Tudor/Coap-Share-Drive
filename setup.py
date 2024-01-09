@@ -6,7 +6,7 @@ with open('requirements.txt') as f:
 setup(
     name='share_drive',
     version='1.0.0',
-    packages=find_packages(),
+    packages=find_packages("source"),
     install_requires=requirements,
     entry_points={
         'console_scripts': [

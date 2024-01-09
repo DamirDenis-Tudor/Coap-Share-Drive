@@ -2,7 +2,7 @@ import json
 from copy import deepcopy
 from socket import socket
 
-from coap_core.coap_packet.coap_config import CoapOptionDelta, CoapContentFormat
+from source.coap_core.coap_packet.coap_config import CoapOptionDelta, CoapContentFormat
 
 
 class CoapPacket:

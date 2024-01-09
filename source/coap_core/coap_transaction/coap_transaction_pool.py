@@ -1,11 +1,11 @@
 import threading
 import time
 
-from coap_core.coap_packet.coap_config import CoapCodeFormat
-from coap_core.coap_utilities.coap_singleton import CoapSingletonBase
-from coap_core.coap_packet.coap_packet import CoapPacket
-from coap_core.coap_transaction.coap_transaction import CoapTransaction
-from coap_core.coap_utilities.coap_timer import CoapTimer
+from source.coap_core.coap_packet.coap_config import CoapCodeFormat
+from source.coap_core.coap_utilities.coap_singleton import CoapSingletonBase
+from source.coap_core.coap_packet.coap_packet import CoapPacket
+from source.coap_core.coap_transaction.coap_transaction import CoapTransaction
+from source.coap_core.coap_utilities.coap_timer import CoapTimer
 
 
 class CoapTransactionPool(CoapSingletonBase):
@@ -25,7 +25,7 @@ class CoapTransactionPool(CoapSingletonBase):
         if self.is_overall_transaction_failed(packet):
             return True
 
-        while len(self.__transaction_dict) >= 100:
+        while len(self.__transaction_dict) >= 200:
             pass
 
         if last_packet:
@@ -90,11 +90,12 @@ class CoapTransactionPool(CoapSingletonBase):
             del self.__transaction_dict[key]
 
     def finish_overall_transaction(self, packet: CoapPacket):
-        self.__overall_finished_transactions[packet.general_work_id()] = time.time()
+        if packet.general_work_id() not in self.__overall_finished_transactions:
+            self.__overall_finished_transactions[packet.general_work_id()] = time.time()
 
     def wait_util_finish(self, packet: CoapPacket):
         while packet.general_work_id() not in self.__overall_finished_transactions:
-            time.sleep(0.1)
+            time.sleep(0.5)
 
     def is_overall_transaction_failed(self, packet: CoapPacket):
         return packet.general_work_id() in self.__failed_transactions

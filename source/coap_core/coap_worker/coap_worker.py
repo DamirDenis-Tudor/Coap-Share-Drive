@@ -3,12 +3,12 @@ import queue
 from contextlib import contextmanager
 from threading import Thread
 
-from coap_core.coap_packet.coap_config import CoapOptionDelta, CoapCodeFormat
-from coap_core.coap_packet.coap_packet import CoapPacket
-from coap_core.coap_packet.coap_templates import CoapTemplates
-from coap_core.coap_resource.resource_manager import ResourceManager
-from coap_core.coap_utilities.coap_logger import logger
-from coap_core.coap_utilities.coap_timer import CoapTimer
+from source.coap_core.coap_packet.coap_config import CoapOptionDelta, CoapCodeFormat
+from source.coap_core.coap_packet.coap_packet import CoapPacket
+from source.coap_core.coap_packet.coap_templates import CoapTemplates
+from source.coap_core.coap_resource.resource_manager import ResourceManager
+from source.coap_core.coap_utilities.coap_logger import logger
+from source.coap_core.coap_utilities.coap_timer import CoapTimer
 
 
 class CoapWorker(Thread, ):

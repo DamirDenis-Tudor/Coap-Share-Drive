@@ -4,7 +4,7 @@ import threading
 from enum import Enum
 from multiprocessing import current_process
 
-from coap_core.coap_utilities.coap_singleton import CoapSingleton, CoapSingletonBase
+from source.coap_core.coap_utilities.coap_singleton import CoapSingleton, CoapSingletonBase
 
 
 class LogDestination(Enum):
@@ -95,12 +95,15 @@ class CoapLogger(CoapSingletonBase):
                         log_message = f"{color.value}{log_message}{LogColor.RESET.value}"
                     print(log_message)
 
-    def debug(self, message, color=LogColor.GREEN):
+    def debug(self, message, color=LogColor.GREEN, stamp= True):
         if self.debug_mode:
             process_name = current_process().name
             thread_name = threading.current_thread().name
             current_time = datetime.datetime.now().strftime("%H:%M:%S")
-            log_message = f"{current_time} {process_name} -> {thread_name}:  {message}"
+            if stamp:
+                log_message = f"{current_time} {process_name} -> {thread_name}:  {message}"
+            else:
+                log_message = message
             with self._lock:
                 if self.destination == LogDestination.CONSOLE:
                     if color is not None:
@@ -131,8 +134,7 @@ class CoapLogger(CoapSingletonBase):
                     self.debug(f"Result of {func.__name__}: {result}", LogColor.BLUE)
                     return result
             except Exception as e:
-                self.debug(f"Function {func.__name__} encountered an exception: {e}", LogColor.RED)
-                raise e
+                self.debug(f"Function {func.__name__} encountered an exception: {e}", LogColor.YELLOW)
 
         return wrapper
 
