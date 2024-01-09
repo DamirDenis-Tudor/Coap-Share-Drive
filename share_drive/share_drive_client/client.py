@@ -29,7 +29,7 @@ class Client(CoapWorkerPool):
     def __init__(self, server_ip, server_port, ip_address, port):
         skt = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
         skt.bind((ip_address, port))
-        super().__init__(skt, ClientResource("downloads", "/home/damir/coap/client/resources/"))
+        super().__init__(skt, ClientResource("downloads", f"{os.path.expanduser('~')}/coap/server/resources/"))
 
         self._add_background_thread(threading.Thread(target=self.client_cli))
 

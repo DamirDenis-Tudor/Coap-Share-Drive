@@ -22,7 +22,7 @@ class Server:
         self._skt = socket(AF_INET, SOCK_DGRAM)
         self._skt.bind((ip_address, port))
 
-        self._resource = ServerResource("share_drive", "/home/damir/coap/server/resources/")
+        self._resource = ServerResource("share_drive", f"{os.path.expanduser('~')}/coap/server/resources/")
         self._processes_queues = {}
         self._recv_queue = queue.Queue()
         logger.debug_mode = True
