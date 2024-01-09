@@ -1,8 +1,0 @@
-README.md
-setup.py
-share_drive.egg-info/PKG-INFO
-share_drive.egg-info/SOURCES.txt
-share_drive.egg-info/dependency_links.txt
-share_drive.egg-info/entry_points.txt
-share_drive.egg-info/requires.txt
-share_drive.egg-info/top_level.txt
