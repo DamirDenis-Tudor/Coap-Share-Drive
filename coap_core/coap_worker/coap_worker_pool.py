@@ -141,17 +141,29 @@ class CoapWorkerPool(ABC):
                     case CoapType.CON.value:
                         if not self.__transaction_pool.is_overall_transaction_failed(packet):
                             if CoapCodeFormat.is_method(packet.code):  # GET PUT POST DELETE FETCH
-                                ack = CoapTemplates.EMPTY_ACK.value_with(packet.token, packet.message_id)
+                                ack = CoapTemplates.EMPTY_ACK.value_with(
+                                    packet.token, packet.message_id,
+                                    self._socket,
+                                    data[1]
+                                )
                                 if packet.get_option_code():
                                     ack.options[packet.get_option_code()] = packet.options[packet.get_option_code()]
                             elif packet.code == CoapCodeFormat.SUCCESS_CONTENT.value():  # CONTENT
-                                ack = CoapTemplates.SUCCESS_CONTINUE_ACK.value_with(packet.token, packet.message_id)
+                                ack = CoapTemplates.SUCCESS_CONTINUE_ACK.value_with(
+                                    packet.token, packet.message_id,
+                                    self._socket, data[1]
+                                )
                                 if packet.get_option_code():
                                     ack.options[packet.get_option_code()] = packet.options[packet.get_option_code()]
                             else:
-                                ack = CoapTemplates.EMPTY_ACK.value_with(packet.token, packet.message_id)
+                                ack = CoapTemplates.EMPTY_ACK.value_with(
+                                    packet.token, packet.message_id,
+                                    self._socket, data[1]
+                                )
+                            ack.skt = self._socket
+                            ack.sender_ip_port = packet.sender_ip_port
+                            ack.send()
 
-                            self._socket.sendto(ack.encode(), packet.sender_ip_port)
                             if packet.work_id() not in self._shared_work:
                                 self.__choose_worker().submit_task(packet)
                                 self._shared_work[packet.work_id()] = time.time()
@@ -173,9 +185,12 @@ class CoapWorkerPool(ABC):
             else:
                 logger.debug(f"{self.name} Invalid coap format: \n {packet.__repr__()}")
 
-                invalid_format = CoapTemplates.INTERNAL_ERROR.value_with(packet.token, packet.message_id)
+                invalid_format = CoapTemplates.INTERNAL_ERROR.value_with(
+                    packet.token, packet.message_id,
+                    self._socket, data[1]
+                )
                 invalid_format.code = CoapCodeFormat.SERVER_ERROR_INTERNAL_SERVER_ERROR.value()
-
+                invalid_format.send()
                 self._socket.sendto(invalid_format.encode(), packet.sender_ip_port)
 
     @logger
@@ -239,4 +254,3 @@ class CoapWorkerPool(ABC):
         self._socket.close()
 
         sys.exit(0)
-

@@ -6,22 +6,6 @@ from coap_core.coap_transaction.coap_transaction import CoapTransaction
 from coap_core.coap_utilities.coap_singleton import CoapSingletonBase
 from coap_core.coap_utilities.coap_timer import CoapTimer
 
-import time
-
-from coap_core.coap_transaction import COAP_CONCURRENT_TRANSACTIONS
-from coap_core.coap_packet.coap_packet import CoapPacket
-from coap_core.coap_transaction.coap_transaction import CoapTransaction
-from coap_core.coap_utilities.coap_singleton import CoapSingletonBase
-from coap_core.coap_utilities.coap_timer import CoapTimer
-
-import time
-
-from coap_core.coap_transaction import COAP_CONCURRENT_TRANSACTIONS
-from coap_core.coap_packet.coap_packet import CoapPacket
-from coap_core.coap_transaction.coap_transaction import CoapTransaction
-from coap_core.coap_utilities.coap_singleton import CoapSingletonBase
-from coap_core.coap_utilities.coap_timer import CoapTimer
-
 
 class CoapTransactionPool(CoapSingletonBase):
     """
@@ -78,7 +62,7 @@ class CoapTransactionPool(CoapSingletonBase):
             Initiates the request and adds the transaction to the pool.
         """
         # Make the initial request
-        packet.skt.sendto(packet.encode(), packet.sender_ip_port)
+        packet.send()
 
         transaction = CoapTransaction(packet, parent_msg_id)
 

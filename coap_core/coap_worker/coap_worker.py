@@ -70,7 +70,8 @@ class CoapWorker(Thread):
 
             self._solve_task(task)
 
-            self._shared_work.pop(task.work_id())
+            if task.work_id() in self._shared_work:
+                self._shared_work.pop(task.work_id())
 
     def stop(self):
         """

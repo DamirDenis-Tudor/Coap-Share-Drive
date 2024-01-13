@@ -51,7 +51,7 @@ class Client(CoapWorkerPool):
         """
         skt = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
         skt.bind((ip_address, port))
-        super().__init__(skt, ClientResource("downloads", f"{os.path.expanduser('~')}/coap/server/resources/"))
+        super().__init__(skt, ClientResource("downloads", f"{os.path.expanduser('~')}/coap/client/resources/"))
 
         self._add_background_thread(threading.Thread(target=self.client_cli))
 
