@@ -96,16 +96,6 @@ class CoapTemplates(Enum):
         payload="",
     )
 
-    SUCCESS_CREATED = CoapPacket(
-        version=1,
-        message_type=CoapType.NON.value,
-        token=b"",
-        code=CoapCodeFormat.SUCCESS_CREATED.value(),
-        message_id=0,
-        options={},
-        payload="",
-    )
-
     SUCCESS_CHANGED = CoapPacket(
         version=1,
         message_type=CoapType.NON.value,
@@ -119,11 +109,13 @@ class CoapTemplates(Enum):
     def __init__(self, coap_packet: CoapPacket):
         self.coap_packet = coap_packet
 
-    def value_with(self, tkn, msg_id) -> CoapPacket:
-        request = deepcopy(self.coap_packet)
+    def value_with(self, tkn, msg_id, skt=None, ip_port=None) -> CoapPacket:
+        request = self.coap_packet.__copy__()
         request.token = tkn
         request.message_id = msg_id % 65536
+        request.skt = skt
+        request.sender_ip_port = ip_port
         return request
 
     def value(self) -> CoapPacket:
-        return deepcopy(self.coap_packet)
+        return self.coap_packet.__copy__()

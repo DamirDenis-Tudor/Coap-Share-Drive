@@ -59,10 +59,11 @@ class DriveSpliter(CoapSingletonBase):
             for index, payload in enumerate(generator, start=1):
 
                 # Create a CoAP response packet with payload and necessary options
-                response = DriveTemplates.CONTENT_RESPONSE.value_with(request.token, request.message_id + index)
+                response = DriveTemplates.CONTENT_RESPONSE.value_with(
+                    request.token, request.message_id + index,
+                    request.skt, request.sender_ip_port
+                )
                 response.payload = payload
-                response.skt = request.skt
-                response.sender_ip_port = request.sender_ip_port
                 response.options[CoapOptionDelta.LOCATION_PATH.value] = os.path.basename(path)
                 response.options[send_block_option] = (
                     CoapPacket.encode_option_block(index - 1, int(index != total_packets), block_fields["SZX"])
@@ -72,6 +73,8 @@ class DriveSpliter(CoapSingletonBase):
                 if index == 1:
                     response.options[request.get_size_code_based_on_option()] = total_packets
 
+                response.encode()
+
                 # Handle congestion and add the transaction to the pool
                 if self.__transaction_pool.handle_congestions(response, index == total_packets):
                     generator.close()
@@ -80,6 +83,7 @@ class DriveSpliter(CoapSingletonBase):
                 # add transaction
                 self.__transaction_pool.add_transaction(response, request.message_id)
 
+            del generator
             retransmissions = self.__transaction_pool.get_number_of_retransmissions(request)
 
             logger.debug(f"<{request.token}> Request finished in {self.__work_timer.elapsed_time()}"

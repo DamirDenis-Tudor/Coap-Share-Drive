@@ -117,27 +117,13 @@ class DriveTemplates(Enum):
         """
         self.coap_packet = coap_packet
 
-    def value_with(self, tkn, msg_id) -> CoapPacket:
-        """
-        Create a new CoapPacket with updated token and message ID.
-
-        Parameters:
-        - tkn: The token for the new CoapPacket.
-        - msg_id: The message ID for the new CoapPacket.
-
-        Returns:
-        - CoapPacket: The CoapPacket with updated token and message ID.
-        """
-        request = deepcopy(self.coap_packet)
+    def value_with(self, tkn, msg_id, skt=None, ip_port=None) -> CoapPacket:
+        request = self.coap_packet.__copy__()
         request.token = tkn
         request.message_id = msg_id % 65536
+        request.skt = skt
+        request.sender_ip_port = ip_port
         return request
 
     def value(self) -> CoapPacket:
-        """
-        Get a deep copy of the CoapPacket template.
-
-        Returns:
-        - CoapPacket: A deep copy of the CoapPacket template.
-        """
-        return deepcopy(self.coap_packet)
+        return self.coap_packet.__copy__()

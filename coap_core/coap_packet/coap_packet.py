@@ -1,5 +1,5 @@
 import json
-from copy import deepcopy
+from copy import deepcopy, copy
 from socket import socket
 
 from coap_core.coap_packet.coap_config import CoapOptionDelta, CoapContentFormat
@@ -179,6 +179,45 @@ class CoapPacket:
         self.skt = skt
 
         self.needs_internal_computation = internal_computation
+        self.encoded = b""
+
+    def __repr__(self):
+        """
+        Return a string representation of the CoAPPacket object.
+
+        Returns:
+            str: String representation of the CoAPPacket object.
+        """
+        readable_options = deepcopy(self.options)
+        for option in readable_options.keys():
+            if option == CoapOptionDelta.BLOCK2.value or option == CoapOptionDelta.BLOCK1.value:
+                readable_options[option] = CoapPacket.decode_option_block(readable_options[option])
+        return f"CoAPPacket(version={self.version}, " \
+               f"message_type={self.message_type}, " \
+               f"token={self.token}, " \
+               f"code={self.code}, " \
+               f"message_id={self.message_id}, " \
+               f"options={readable_options}, "
+
+    def __copy__(self):
+        """
+        Create a shallow copy of the CoapPacket instance.
+
+        Returns:
+            CoapPacket: Shallow copy of the CoapPacket instance.
+        """
+        return self.__class__(
+            version=copy(self.version),
+            message_type=copy(self.message_type),
+            token=copy(self.token),
+            code=copy(self.code),
+            message_id=copy(self.message_id),
+            options=deepcopy(self.options),
+            payload=copy(self.payload),
+            internal_computation=copy(self.needs_internal_computation),
+            sender_ip_port=copy(self.sender_ip_port),
+            skt=copy(self.skt)
+        )
 
     def has_option_block(self):
         return CoapOptionDelta.BLOCK1.value in self.options or CoapOptionDelta.BLOCK2.value in self.options
@@ -234,6 +273,9 @@ class CoapPacket:
         Returns:
             bytes: Byte representation of the CoAP packet.
         """
+        if self.encoded:
+            return self.encoded
+
         # CoAP Header
         header = bytes([
             (self.version << 6) | (self.message_type << 4) | (len(self.token) & 0b1111),
@@ -274,6 +316,8 @@ class CoapPacket:
 
         # Combine all parts to form the CoAP packet
         coap_packet = header + token_bytes + options_bytes + payload_bytes
+
+        self.encoded = coap_packet
 
         return coap_packet
 
@@ -352,20 +396,8 @@ class CoapPacket:
                 payload = json.loads(payload)
         return cls(version, message_type, token, code, message_id, options, payload, False, address, skt)
 
-    def __repr__(self):
+    def send(self):
         """
-        Return a string representation of the CoAPPacket object.
-
-        Returns:
-            str: String representation of the CoAPPacket object.
+        Send the CoapPacket over the socket to the specified address.
         """
-        readable_options = deepcopy(self.options)
-        for option in readable_options.keys():
-            if option == CoapOptionDelta.BLOCK2.value or option == CoapOptionDelta.BLOCK1.value:
-                readable_options[option] = CoapPacket.decode_option_block(readable_options[option])
-        return f"CoAPPacket(version={self.version}, " \
-               f"message_type={self.message_type}, " \
-               f"token={self.token}, " \
-               f"code={self.code}, " \
-               f"message_id={self.message_id}, " \
-               f"options={readable_options}, "
+        self.skt.sendto(self.encode(), self.sender_ip_port)

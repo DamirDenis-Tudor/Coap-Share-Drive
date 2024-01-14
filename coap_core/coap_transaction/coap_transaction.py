@@ -1,7 +1,9 @@
 from coap_core.coap_packet.coap_packet import CoapPacket
 from coap_core.coap_packet.coap_templates import CoapTemplates
+from coap_core.coap_transaction import ACK_TIMEOUT, MAX_RETRANSMISSION_SPAN, MAX_RETRANSMIT
 from coap_core.coap_utilities.coap_logger import logger
 from coap_core.coap_utilities.coap_timer import CoapTimer
+
 
 class CoapTransaction:
     """
@@ -11,13 +13,6 @@ class CoapTransaction:
     - This class assumes the presence of the `CoapPacket`, `CoapTimer`, `CoapTemplates`, and `logger` entities.
     - The `run_transaction` method implements the retransmission logic based on CoAP specifications.
     """
-
-    # Class Constants
-    ACK_TIMEOUT = 2
-    ACK_RANDOM_FACTOR = 1.5
-    MAX_RETRANSMIT = 4
-    MAX_RETRANSMISSION_SPAN = (ACK_TIMEOUT * ((2 ** MAX_RETRANSMIT) - 1) * ACK_RANDOM_FACTOR)
-    MAX_RETRANSMISSION_WAIT = (ACK_TIMEOUT * ((2 ** (MAX_RETRANSMIT + 1)) - 1) * ACK_RANDOM_FACTOR)
 
     # Transaction States
     NO_ACTION = 0
@@ -35,7 +30,7 @@ class CoapTransaction:
         self.__request: CoapPacket = request
         self.__parent_msg_id = parent_msg_id
         self.__timer: CoapTimer = CoapTimer().reset()
-        self.__ack_timeout = CoapTransaction.ACK_TIMEOUT
+        self.__ack_timeout = ACK_TIMEOUT
         self.__transmit_time_span = 0
         self.__retransmission_counter = 0
 
@@ -94,8 +89,8 @@ class CoapTransaction:
             self.__timer.reset()
 
             # Check if retransmission limits are reached
-            if (self.__transmit_time_span > CoapTransaction.MAX_RETRANSMISSION_SPAN or
-                    self.__retransmission_counter > CoapTransaction.MAX_RETRANSMIT):
+            if (self.__transmit_time_span > MAX_RETRANSMISSION_SPAN or
+                    self.__retransmission_counter > MAX_RETRANSMIT):
                 reset_response = CoapTemplates.FAILED_REQUEST.value_with(self.__request.token, self.parent_msg_id)
                 self.__request.skt.sendto(reset_response.encode(), self.__request.sender_ip_port)
 

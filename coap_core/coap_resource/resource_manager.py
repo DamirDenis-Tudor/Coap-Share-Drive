@@ -17,14 +17,10 @@ class ResourceManager(CoapSingletonBase):
 
     """
     def __init__(self):
-        # Attribute to track initialization status
-        self.initialized = True
         # List to store CoAP resources
         self.__resources: list = []
         # Default CoAP resource
         self.__default_resource = None
-        # Root path information for resources
-        self.__root_path = None
 
     def add_resource(self, resource: Resource):
         """Adds a CoAP resource to the ResourceManager."""
