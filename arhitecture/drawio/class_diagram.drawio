@@ -1,0 +1,467 @@
+<mxfile host="Electron" modified="2024-01-14T10:22:57.834Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.1.18 Chrome/120.0.6099.199 Electron/28.1.2 Safari/537.36" etag="wc_bug2uuqoIbGKENjn9" version="22.1.18" type="device">
+  <diagram name="Page-1" id="2YBvvXClWsGukQMizWep">
+    <mxGraphModel dx="2475" dy="1424" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-1" value="CoapWorkerPool" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#2C4A42;strokeWidth=3;" parent="1" vertex="1">
+          <mxGeometry x="560" y="350" width="320" height="460" as="geometry">
+            <mxRectangle x="170" y="350" width="140" height="30" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-2" value="&lt;b&gt;- socket: Socket&lt;br&gt;- isRunning: Boolean = True&lt;br&gt;&lt;br&gt;- sharedWork: Map&amp;lt;List, Time&amp;gt;&lt;br&gt;- failedRequests: Map&amp;lt;List, Time&amp;gt;&lt;br&gt;- receivedPackets: Queue&amp;lt;Bytes&amp;gt;&lt;br&gt;- validCoapPackets: Queue&amp;lt;CoapPacket&amp;gt;&lt;br&gt;&lt;br&gt;- workers: CoapWorker&lt;br&gt;- maxQueueSize, allowedIdleTime: Integer&lt;br&gt;&lt;br&gt;- idleEvent, traansactionEvent, stopEvent: Event&lt;br&gt;- backgroundThreads: List[Thread]&lt;br&gt;&lt;br&gt;- transactionPool: TransactionPool&lt;/b&gt;" style="text;strokeColor=default;fillColor=#182925;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=3;" parent="PeRiEi2MZdtG_Jacx_HJ-1" vertex="1">
+          <mxGeometry y="30" width="320" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-3" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PeRiEi2MZdtG_Jacx_HJ-1" vertex="1">
+          <mxGeometry y="260" width="320" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-4" value="&lt;b&gt;+ CoapWorkerPool (s: Socket, r: Resource, q: Queue )&lt;br&gt;&lt;br&gt;- handleTransactions ()&lt;br&gt;- handleWorkers ()&lt;br&gt;- chooseWorker ()&lt;br&gt;- coapFormatFilter ()&lt;br&gt;&lt;br&gt;# addBackgroundThread ( t: Thread )&lt;br&gt;# handleInternalTask ( t: CoapPacket )&lt;br&gt;&lt;br&gt;+ listen()&lt;br&gt;+ start()&lt;br&gt;+ stop()&lt;/b&gt;" style="text;strokeColor=default;fillColor=#182925;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=3;" parent="PeRiEi2MZdtG_Jacx_HJ-1" vertex="1">
+          <mxGeometry y="260" width="320" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-5" value="CoapWorker" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#2C4A42;strokeWidth=3;" parent="1" vertex="1">
+          <mxGeometry x="195" y="490" width="240" height="320" as="geometry">
+            <mxRectangle x="170" y="350" width="140" height="30" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-6" value="&lt;b&gt;- isRunning: Boolean = True&lt;br&gt;- heavyWork: Boolean&lt;br&gt;- sharedWork: Map&amp;lt;List, Time&amp;gt;&lt;br&gt;- requestsQueue: Queue&lt;br&gt;- timer: CoapTimer&lt;br&gt;&lt;/b&gt;" style="text;strokeColor=default;fillColor=#182925;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=3;" parent="PeRiEi2MZdtG_Jacx_HJ-5" vertex="1">
+          <mxGeometry y="30" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-7" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PeRiEi2MZdtG_Jacx_HJ-5" vertex="1">
+          <mxGeometry y="120" width="240" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-8" value="&lt;b&gt;+ CoapWorker (sharedWork: Queue )&lt;br&gt;&lt;br&gt;+ getQueueSize(): Integer&lt;br&gt;+ getIdleTime(): Float&lt;br&gt;&lt;br&gt;+ withHeavyWork()&lt;br&gt;+ isHeavlyLoaded()&lt;br&gt;&lt;br&gt;+ run()&lt;br&gt;+ stop()&lt;br&gt;&lt;br&gt;+ submitTask( t: CoapPacket )&lt;br&gt;# solveTask()&lt;br&gt;&lt;/b&gt;" style="text;strokeColor=default;fillColor=#182925;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=3;" parent="PeRiEi2MZdtG_Jacx_HJ-5" vertex="1">
+          <mxGeometry y="120" width="240" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-10" value="Thread" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#2C4A42;strokeWidth=3;" parent="1" vertex="1">
+          <mxGeometry x="195" y="350" width="240" height="30" as="geometry">
+            <mxRectangle x="170" y="350" width="140" height="30" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-12" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PeRiEi2MZdtG_Jacx_HJ-10" vertex="1">
+          <mxGeometry y="30" width="240" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-14" value="&lt;b&gt;Extends&lt;/b&gt;" style="endArrow=block;endSize=16;endFill=0;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;strokeColor=#67AB9F;strokeWidth=2;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-5" target="PeRiEi2MZdtG_Jacx_HJ-10" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="540" y="480" as="sourcePoint" />
+            <mxPoint x="700" y="480" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-15" value="&lt;b&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;Use&lt;/font&gt;&lt;/b&gt;" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;strokeColor=#67AB9F;strokeWidth=2;entryX=1.015;entryY=0.39;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" target="PeRiEi2MZdtG_Jacx_HJ-10" edge="1">
+          <mxGeometry x="-0.5055" y="1" width="160" relative="1" as="geometry">
+            <mxPoint x="560" y="360" as="sourcePoint" />
+            <mxPoint x="470" y="370" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-18" value="&amp;lt;&amp;lt;Singleton&amp;gt;&amp;gt;&lt;br&gt;ResourceManager" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=45;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#785632;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="330" y="935" width="210" height="229" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-19" value="- resources: List&amp;lt;Resource&amp;gt;&lt;br&gt;- defaultResource: Resource" style="text;strokeColor=default;fillColor=#4F3921;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-18" vertex="1">
+          <mxGeometry y="45" width="210" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-20" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PeRiEi2MZdtG_Jacx_HJ-18" vertex="1">
+          <mxGeometry y="89" width="210" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-21" value="+ ResourceManager()&lt;br&gt;&lt;br&gt;+ addResource(r: Resource)&lt;br&gt;+ addDefaultResource(r: Resource)&lt;br&gt;&lt;br&gt;+ getResource(id: String): Resource&lt;br&gt;+ getDefaultResource(): Resource&lt;br&gt;&lt;br&gt;+ discoverResources()&lt;br&gt;" style="text;strokeColor=default;fillColor=#4F3921;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-18" vertex="1">
+          <mxGeometry y="89" width="210" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-23" value="" style="endArrow=diamondThin;endFill=0;endSize=24;html=1;rounded=0;strokeColor=#785632;strokeWidth=2;exitX=-0.002;exitY=0.395;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;startArrow=open;startFill=0;startSize=12;exitPerimeter=0;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-69" target="PeRiEi2MZdtG_Jacx_HJ-19" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="740" y="1002" as="sourcePoint" />
+            <mxPoint x="430" y="1070" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-25" value="" style="endArrow=diamondThin;endFill=0;endSize=24;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;strokeColor=#785632;strokeWidth=2;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-18" target="PeRiEi2MZdtG_Jacx_HJ-5" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="445" y="1085" as="sourcePoint" />
+            <mxPoint x="610" y="1085" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="435" y="880" />
+              <mxPoint x="315" y="880" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-26" value="" style="endArrow=diamondThin;endFill=0;endSize=24;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;strokeColor=#785632;strokeWidth=2;startArrow=open;startFill=0;startSize=14;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-18" target="PeRiEi2MZdtG_Jacx_HJ-1" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="340" y="980" as="sourcePoint" />
+            <mxPoint x="750" y="810" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="435" y="880" />
+              <mxPoint x="720" y="880" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-16" value="" style="endArrow=diamondThin;endFill=1;endSize=24;html=1;rounded=0;strokeColor=#67AB9F;strokeWidth=2;entryX=0;entryY=-0.005;entryDx=0;entryDy=0;entryPerimeter=0;startArrow=open;startFill=0;targetPerimeterSpacing=1;sourcePerimeterSpacing=2;startSize=12;exitX=1.011;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-8" target="PeRiEi2MZdtG_Jacx_HJ-4" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="440" y="610" as="sourcePoint" />
+            <mxPoint x="620" y="600" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-34" value="CoapTransaction" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#5356D4;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="180" y="10" width="280" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-35" value="- packet: CoapPacket&lt;br&gt;- parentMsgID: Integer&lt;br&gt;- timer: CoapTimer&lt;br&gt;- ackTimeout: Float = ACK_TIMEOUT&lt;br&gt;- retransmissionSpan: Float = 0&lt;br&gt;- retransmissionCounter: Integer = 0" style="text;strokeColor=default;fillColor=#353787;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-34" vertex="1">
+          <mxGeometry y="26" width="280" height="104" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-36" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PeRiEi2MZdtG_Jacx_HJ-34" vertex="1">
+          <mxGeometry y="130" width="280" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-37" value="+ CoapTransaction(p: CoapPacket, parentMsgID)&lt;br&gt;&lt;br&gt;+ runTransaction(): int [status]" style="text;strokeColor=default;fillColor=#353787;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-34" vertex="1">
+          <mxGeometry y="130" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-38" value="&amp;lt;&amp;lt;singleton&amp;gt;&amp;gt;&lt;br&gt;CoapTransactionPool" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#5356D4;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="570" y="-110" width="310" height="374" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-39" value="- overallFinishedTransactions: Map&amp;lt;List, Time&amp;gt;&lt;br&gt;- finishedTransactions: Map&amp;lt;List, Time&amp;gt;&lt;br&gt;- failedTransactions: Map&amp;lt;List, Time&amp;gt;&lt;br&gt;- transactions: Map&amp;lt;List, CoapTransaction&amp;gt;&lt;br&gt;- retransmissions: Map&amp;lt;List, Integer&amp;gt;" style="text;strokeColor=default;fillColor=#353787;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-38" vertex="1">
+          <mxGeometry y="40" width="310" height="84" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-40" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PeRiEi2MZdtG_Jacx_HJ-38" vertex="1">
+          <mxGeometry y="124" width="310" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-41" value="+ CoapTransactionPool()&lt;br&gt;&lt;br&gt;+ handleCongestions(p: CoapPacket): bool&lt;br&gt;+ addTransaction(p: CoapPacket, parentMsgID)&lt;br&gt;&lt;br&gt;+ finishTransaction(p: CoapPacket)&lt;br&gt;+ isTransactionFinished(p: CoapPacket): Boolean&lt;br&gt;&lt;br&gt;+ finishOverallTransaction(p: CoapPacket)&lt;br&gt;+ waitUntilFinish(p: CoapPacket)&lt;br&gt;&lt;br&gt;+ setOverallTransactionFailure(c: CoapPacket)&lt;br&gt;+ isOverallTransactionFailure(c: CoapPacket): Boolean&lt;br&gt;&lt;br&gt;+ solveTransactions()&lt;br&gt;- cleanFailedTransactions(c: CoapPacket)" style="text;strokeColor=default;fillColor=#353787;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-38" vertex="1">
+          <mxGeometry y="124" width="310" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-42" value="" style="endArrow=open;html=1;endSize=10;startArrow=diamondThin;startSize=18;startFill=1;edgeStyle=orthogonalEdgeStyle;align=left;verticalAlign=bottom;rounded=0;exitX=-0.001;exitY=0.333;exitDx=0;exitDy=0;exitPerimeter=0;strokeColor=#5356D4;strokeWidth=2;entryX=1.001;entryY=0.587;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-41" target="PeRiEi2MZdtG_Jacx_HJ-35" edge="1">
+          <mxGeometry x="-1" y="3" relative="1" as="geometry">
+            <mxPoint x="470" y="170" as="sourcePoint" />
+            <mxPoint x="460" y="83" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-43" value="" style="endArrow=open;html=1;endSize=11;startArrow=diamondThin;startSize=21;startFill=0;edgeStyle=orthogonalEdgeStyle;align=left;verticalAlign=bottom;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;strokeColor=#5356D4;strokeWidth=2;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-1" edge="1">
+          <mxGeometry x="-1" y="3" relative="1" as="geometry">
+            <mxPoint x="580" y="93" as="sourcePoint" />
+            <mxPoint x="720" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-44" value="CoapPacket" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#8D67A2;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="-340" y="100" width="340" height="460" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-45" value="+ version,&amp;nbsp;message_type: Integer&lt;br&gt;+ token: bytes&lt;br&gt;+ code, message_id: Integer&lt;br&gt;+ options: Map&lt;br&gt;+ payload: Bytes | String | Map&lt;br&gt;+ senderIpPort: List&lt;br&gt;+ skt: Socket&lt;br&gt;+ needsInternalComputation: Boolean&lt;br&gt;+ preEncoded: Bytes" style="text;strokeColor=default;fillColor=#432D57;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-44" vertex="1">
+          <mxGeometry y="26" width="340" height="144" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-47" value="+ CoapPacket( ... )&lt;br&gt;&lt;br&gt;+ hasOptionBlock(): Boolean&lt;br&gt;+ getBlockId(): Integer&lt;br&gt;+ getOptionBlockCode(): Integer&lt;br&gt;+ getSizeCode(): Integer&lt;br&gt;+ getSizeCodeBasedOnOption(): Integer&lt;br&gt;&lt;br&gt;+ workID(): List&lt;br&gt;+ generealWorkID(): List&lt;br&gt;&lt;br&gt;+ encode() : Bytes&lt;br&gt;+ decode(p: CoapPacket, adress: List, s: Socket) &amp;lt;&amp;lt;static&amp;gt;&amp;gt;&lt;br&gt;# encodeOption(optionValue: int, deltaValue: Int) &amp;lt;&amp;lt;static&amp;gt;&amp;gt;&lt;br&gt;# decodeOption(delta: Int, optionValue: Int): int &amp;lt;&amp;lt;static&amp;gt;&amp;gt;&lt;br&gt;+ encodeOptionBlock(num: int, m: int, szx: int): int &amp;lt;&amp;lt;static&amp;gt;&amp;gt;&lt;br&gt;+ decodeOptionBlock(option: int): Map &amp;lt;&amp;lt;static&amp;gt;&amp;gt;&lt;br&gt;&lt;br&gt;+ send()" style="text;strokeColor=default;fillColor=#432D57;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-44" vertex="1">
+          <mxGeometry y="170" width="340" height="290" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-46" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PeRiEi2MZdtG_Jacx_HJ-44" vertex="1">
+          <mxGeometry y="460" width="340" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-48" value="&amp;lt;&amp;lt;Enum&amp;gt;&amp;gt;&lt;br&gt;CoapTemplates" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#8D67A2;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="-340" y="630" width="340" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-49" value="+ NOT_IMPLEMENTED&lt;br&gt;+ BAD_REQUEST&lt;br&gt;+ CONFLICT&lt;br&gt;+ NOT_FOUND&lt;br&gt;+ FAILED_REQUEST&lt;br&gt;+ INTERNAL_ERROR&lt;br&gt;+ EMPTY_ACK&lt;br&gt;" style="text;strokeColor=default;fillColor=#432D57;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-48" vertex="1">
+          <mxGeometry y="40" width="340" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-51" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PeRiEi2MZdtG_Jacx_HJ-48" vertex="1">
+          <mxGeometry y="160" width="340" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-52" value="CoapConfig" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#8D67A2;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="-340" y="860" width="340" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-53" value="Contains all the protocal code values" style="text;strokeColor=default;fillColor=#432D57;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-52" vertex="1">
+          <mxGeometry y="30" width="340" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-54" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PeRiEi2MZdtG_Jacx_HJ-52" vertex="1">
+          <mxGeometry y="60" width="340" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-55" value="" style="endArrow=none;endSize=12;dashed=1;html=1;rounded=0;entryX=-0.004;entryY=0.932;entryDx=0;entryDy=0;entryPerimeter=0;strokeWidth=2;strokeColor=#8D67A2;startArrow=none;startFill=0;endFill=0;" parent="1" target="PeRiEi2MZdtG_Jacx_HJ-41" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="310" y="247" as="sourcePoint" />
+            <mxPoint x="440" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-56" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;Use&lt;/font&gt;" style="endArrow=none;endSize=12;dashed=1;html=1;rounded=0;entryX=0.481;entryY=1.012;entryDx=0;entryDy=0;entryPerimeter=0;strokeWidth=2;strokeColor=#8D67A2;endFill=0;startArrow=open;startFill=0;" parent="1" target="PeRiEi2MZdtG_Jacx_HJ-37" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="10" y="246" as="sourcePoint" />
+            <mxPoint x="579" y="257" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="315" y="246" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-57" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Use&lt;/font&gt;" style="endArrow=none;endSize=12;dashed=1;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeWidth=2;strokeColor=#8D67A2;endFill=0;startArrow=open;startFill=0;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-49" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="23" y="266" as="sourcePoint" />
+            <mxPoint x="160" y="250" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="160" y="730" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-58" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Use&lt;/font&gt;" style="endArrow=none;endSize=12;dashed=1;html=1;rounded=0;exitX=0.996;exitY=-0.008;exitDx=0;exitDy=0;strokeWidth=2;strokeColor=#8D67A2;endFill=0;exitPerimeter=0;startArrow=open;startFill=0;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-53" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="10" y="740" as="sourcePoint" />
+            <mxPoint x="160" y="730" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="160" y="890" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-59" value="" style="endArrow=none;endSize=12;dashed=1;html=1;rounded=0;entryX=-0.004;entryY=0.932;entryDx=0;entryDy=0;entryPerimeter=0;strokeWidth=2;strokeColor=#8D67A2;startArrow=none;startFill=0;endFill=0;exitX=-0.004;exitY=0.78;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-2" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="509" y="570" as="sourcePoint" />
+            <mxPoint x="509" y="250" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="509" y="560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-60" value="" style="endArrow=none;endSize=12;dashed=1;html=1;rounded=0;strokeWidth=2;strokeColor=#8D67A2;startArrow=none;startFill=0;endFill=0;" parent="1" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="440" y="560" as="sourcePoint" />
+            <mxPoint x="510" y="560" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="510" y="560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-61" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Client&lt;/font&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#2C4A42;strokeWidth=3;" parent="1" vertex="1">
+          <mxGeometry x="1070" y="20" width="280" height="190" as="geometry">
+            <mxRectangle x="170" y="350" width="140" height="30" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-63" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PeRiEi2MZdtG_Jacx_HJ-61" vertex="1">
+          <mxGeometry y="30" width="280" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-64" value="+ Client ( serverIp, serverPort, clientIp, clientPort )&lt;br&gt;&lt;br&gt;+ dowloadFile()&lt;br&gt;+ uploadFile()&lt;br&gt;+ renameFile()&lt;br&gt;+ moveFile()&lt;br&gt;+ deleteFile()&lt;br&gt;+ fetchSeverData()&lt;br&gt;&lt;br&gt;+ runClientCli()" style="text;strokeColor=default;fillColor=#182925;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=3;" parent="PeRiEi2MZdtG_Jacx_HJ-61" vertex="1">
+          <mxGeometry y="30" width="280" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-65" value="ClientResource" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#785632;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="1080" y="290" width="260" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-67" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PeRiEi2MZdtG_Jacx_HJ-65" vertex="1">
+          <mxGeometry y="30" width="260" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-68" value="+ ClientResource(name: String, path: String)&lt;br&gt;&lt;br&gt;+ handleGet(r: CoapPacket)&lt;br&gt;+ handlePut(r: CoapPacket)&lt;br&gt;+ handlePost(r: CoapPacket)&lt;br&gt;+ handleDelete(r: CoapPacket)&lt;br&gt;+ handleFetch(r: CoapPacket)&lt;br&gt;+ handleResponse(r: CoapPacket)&lt;br&gt;+ handleInternal(r: CoapPacket)" style="text;strokeColor=default;fillColor=#4F3921;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-65" vertex="1">
+          <mxGeometry y="30" width="260" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-69" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;i&gt;&amp;lt;&amp;lt;Interface&amp;gt;&amp;gt;&lt;/i&gt;&lt;br&gt;&lt;b&gt;Resource&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;- name: String&lt;br&gt;- path: String&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ getName(): String&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ getPath(): String&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;fillColor=#785632;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="690" y="950" width="190" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-73" value="ServerResource" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#785632;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="1080" y="810" width="260" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-74" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PeRiEi2MZdtG_Jacx_HJ-73" vertex="1">
+          <mxGeometry y="30" width="260" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-75" value="+ ServerResource(name: String, path: String)&lt;br&gt;&lt;br&gt;+ handleGet(r: CoapPacket)&lt;br&gt;+ handlePut(r: CoapPacket)&lt;br&gt;+ handlePost(r: CoapPacket)&lt;br&gt;+ handleDelete(r: CoapPacket)&lt;br&gt;+ handleFetch(r: CoapPacket)&lt;br&gt;+ handleResponse(r: CoapPacket)&lt;br&gt;+ handleInternal(r: CoapPacket)" style="text;strokeColor=default;fillColor=#4F3921;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-73" vertex="1">
+          <mxGeometry y="30" width="260" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-80" value="Server" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#355950;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="1060" y="590" width="330" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-81" value="- resource: ServerResource&lt;br&gt;- proccessesQueues: Map&amp;lt;String, Pair&amp;lt;Process, Queue&amp;gt;&amp;gt;&lt;br&gt;- recvQueue: Queue" style="text;strokeColor=default;fillColor=#182925;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-80" vertex="1">
+          <mxGeometry y="26" width="330" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-82" value="" style="line;strokeWidth=2;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PeRiEi2MZdtG_Jacx_HJ-80" vertex="1">
+          <mxGeometry y="90" width="330" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-83" value="+ listen()" style="text;strokeColor=default;fillColor=#182925;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-80" vertex="1">
+          <mxGeometry y="90" width="330" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-84" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Extends&lt;/font&gt;" style="endArrow=block;endSize=16;endFill=0;html=1;rounded=0;entryX=1.008;entryY=0.342;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#355950;strokeWidth=2;entryPerimeter=0;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-64" target="PeRiEi2MZdtG_Jacx_HJ-2" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="790" y="600" as="sourcePoint" />
+            <mxPoint x="950" y="600" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="980" y="130" />
+              <mxPoint x="980" y="290" />
+              <mxPoint x="980" y="459" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-85" value="1" style="endArrow=open;html=1;endSize=16;startArrow=diamondThin;startSize=27;startFill=1;edgeStyle=orthogonalEdgeStyle;align=left;verticalAlign=bottom;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#355950;strokeWidth=2;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-80" edge="1">
+          <mxGeometry x="-1" y="3" relative="1" as="geometry">
+            <mxPoint x="840" y="510" as="sourcePoint" />
+            <mxPoint x="880" y="650" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-86" value="" style="endArrow=block;dashed=1;endFill=0;endSize=12;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#785632;strokeWidth=2;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-73" target="PeRiEi2MZdtG_Jacx_HJ-69" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="840" y="670" as="sourcePoint" />
+            <mxPoint x="1000" y="670" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1020" y="895" />
+              <mxPoint x="1020" y="1015" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-88" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;IMPLEMENTS&lt;/font&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="PeRiEi2MZdtG_Jacx_HJ-86" vertex="1" connectable="0">
+          <mxGeometry x="0.3395" y="3" relative="1" as="geometry">
+            <mxPoint x="44" y="-238" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-87" value="" style="endArrow=none;dashed=1;endFill=0;endSize=12;html=1;rounded=0;exitX=-0.002;exitY=0.437;exitDx=0;exitDy=0;strokeColor=#785632;strokeWidth=2;exitPerimeter=0;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-68" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="1200" y="905" as="sourcePoint" />
+            <mxPoint x="1020" y="900" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1020" y="380" />
+              <mxPoint x="1020" y="630" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-90" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Use&lt;/font&gt;" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.55;exitY=-0.015;exitDx=0;exitDy=0;exitPerimeter=0;strokeWidth=2;strokeColor=#785632;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-73" target="PeRiEi2MZdtG_Jacx_HJ-80" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="1180" y="800" as="sourcePoint" />
+            <mxPoint x="1340" y="800" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-91" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Use&lt;/font&gt;" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;entryX=0.488;entryY=1.014;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#785632;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-65" target="PeRiEi2MZdtG_Jacx_HJ-64" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="1327" y="290" as="sourcePoint" />
+            <mxPoint x="1330.5" y="250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-92" value="&amp;lt;&amp;lt;Singleton&amp;gt;&amp;gt;&lt;br&gt;DriveAssembler" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#708496;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="1610" y="100" width="260" height="304" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-93" value="- transactionPool:CoapTransactionPool&lt;br&gt;- inAssembly: Map&amp;lt;List, Map&amp;gt;&lt;br&gt;- assembled: List&amp;lt;List&amp;gt;&lt;br&gt;- workTimer: CoapTimer&lt;br&gt;- contentDict: Map&lt;br&gt;- savePath: String" style="text;strokeColor=default;fillColor=#4A5763;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-92" vertex="1">
+          <mxGeometry y="40" width="260" height="104" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-94" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PeRiEi2MZdtG_Jacx_HJ-92" vertex="1">
+          <mxGeometry y="144" width="260" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-95" value="+ setSavePath(path: String)&lt;br&gt;+ resetSavePath()&lt;br&gt;&lt;br&gt;+ handlePaths(p: CoapPacket)&lt;br&gt;+ handlePackets(p: CoapPacket, path: String)&lt;br&gt;&lt;br&gt;+ getFilesList(): List&lt;br&gt;+ getFoldersList(): List&lt;br&gt;+ getContent(): Map&lt;br&gt;+ clearContent()" style="text;strokeColor=default;fillColor=#4A5763;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-92" vertex="1">
+          <mxGeometry y="144" width="260" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-96" value="&amp;lt;&amp;lt;Singleton&amp;gt;&amp;gt;&lt;br&gt;DriveSplitter" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#708496;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="1610" y="760" width="260" height="134" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-97" value="- transactionPool:CoapTransactionPool&lt;br&gt;- workTimer: CoapTimer" style="text;strokeColor=default;fillColor=#4A5763;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-96" vertex="1">
+          <mxGeometry y="40" width="260" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-98" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PeRiEi2MZdtG_Jacx_HJ-96" vertex="1">
+          <mxGeometry y="84" width="260" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-99" value="+ splitOnBytesAndSend(r: CoapPacket)&lt;br&gt;+ splitOnPathsAndSend(r, CoapPacket)" style="text;strokeColor=default;fillColor=#4A5763;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-96" vertex="1">
+          <mxGeometry y="84" width="260" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-100" value="DriveUtilities" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#708496;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="1575" y="480" width="330" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-102" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PeRiEi2MZdtG_Jacx_HJ-100" vertex="1">
+          <mxGeometry y="30" width="330" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-103" value="+ fileExists(path): Boolean &amp;lt;&amp;lt;static&amp;gt;&amp;gt;&lt;br&gt;+ folderExists(path): Boolean &amp;lt;&amp;lt;static&amp;gt;&amp;gt;&lt;br&gt;+ getTotalPaths(path): Integer &amp;lt;&amp;lt;static&amp;gt;&amp;gt;&lt;br&gt;+ getTotalPackets(path): Integer &amp;lt;&amp;lt;static&amp;gt;&amp;gt;&lt;br&gt;+ compressFolder(folder): String &amp;lt;&amp;lt;static&amp;gt;&amp;gt;&lt;br&gt;+ decompressFolder(folder) &amp;lt;&amp;lt;static&amp;gt;&amp;gt;&lt;br&gt;+ deleteFile(path) &amp;lt;&amp;lt;static&amp;gt;&amp;gt;&lt;br&gt;+ splitOnPaths(source, relativeTo): List &amp;lt;&amp;lt;static&amp;gt;&amp;gt;&lt;br&gt;+ splitOnPackets(path, blockSize): Generator &amp;lt;&amp;lt;static&amp;gt;&amp;gt;&lt;br&gt;" style="text;strokeColor=default;fillColor=#4A5763;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;strokeWidth=2;" parent="PeRiEi2MZdtG_Jacx_HJ-100" vertex="1">
+          <mxGeometry y="30" width="330" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-105" value="" style="endArrow=none;endFill=0;endSize=12;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;strokeWidth=2;strokeColor=#708496;startArrow=open;startFill=0;startSize=15;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-93" target="PeRiEi2MZdtG_Jacx_HJ-65" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="1540" y="530" as="sourcePoint" />
+            <mxPoint x="1700" y="530" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1480" y="190" />
+              <mxPoint x="1480" y="375" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-106" value="" style="endArrow=none;endFill=0;endSize=17;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;startArrow=open;startFill=0;strokeWidth=2;strokeColor=#708496;startSize=16;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-96" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="1620" y="202" as="sourcePoint" />
+            <mxPoint x="1480" y="370" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1480" y="827" />
+              <mxPoint x="1480" y="400" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-108" value="" style="endArrow=none;endFill=0;endSize=12;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#708496;startArrow=none;startFill=0;" parent="1" target="PeRiEi2MZdtG_Jacx_HJ-73" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="1480" y="830" as="sourcePoint" />
+            <mxPoint x="1350" y="385" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1480" y="830" />
+              <mxPoint x="1480" y="895" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-109" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;strokeWidth=2;strokeColor=#708496;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-92" target="PeRiEi2MZdtG_Jacx_HJ-100" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="1320" y="600" as="sourcePoint" />
+            <mxPoint x="1480" y="600" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-110" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;entryX=0.499;entryY=1.011;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;strokeWidth=2;strokeColor=#708496;entryPerimeter=0;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-96" target="PeRiEi2MZdtG_Jacx_HJ-103" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="1750" y="414" as="sourcePoint" />
+            <mxPoint x="1750" y="490" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-111" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.25;exitDx=0;exitDy=0;strokeWidth=2;strokeColor=#708496;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-73" target="PeRiEi2MZdtG_Jacx_HJ-100" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="1550" y="668" as="sourcePoint" />
+            <mxPoint x="1550" y="570" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1520" y="852" />
+              <mxPoint x="1520" y="570" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-112" value="Use" style="endArrow=none;endSize=12;dashed=1;html=1;rounded=0;exitX=1;exitY=0.75;exitDx=0;exitDy=0;strokeWidth=2;strokeColor=#708496;endFill=0;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-65" edge="1">
+          <mxGeometry x="0.2398" width="160" relative="1" as="geometry">
+            <mxPoint x="1350" y="862" as="sourcePoint" />
+            <mxPoint x="1520" y="580" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1520" y="418" />
+              <mxPoint x="1520" y="570" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-113" value="CoapPacket" style="html=1;whiteSpace=wrap;fillColor=#8D67A2;" parent="1" vertex="1">
+          <mxGeometry x="1390" y="20" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-114" value="CoapTemplates" style="html=1;whiteSpace=wrap;fillColor=#8D67A2;" parent="1" vertex="1">
+          <mxGeometry x="1500" y="20" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-115" value="CoapConfig" style="html=1;whiteSpace=wrap;fillColor=#8D67A2;" parent="1" vertex="1">
+          <mxGeometry x="1610" y="20" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-116" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Use&lt;/font&gt;" style="endArrow=none;endSize=12;dashed=1;html=1;rounded=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;strokeWidth=2;strokeColor=#8D67A2;endFill=0;startArrow=open;startFill=0;startSize=12;" parent="1" source="PeRiEi2MZdtG_Jacx_HJ-114" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="1340" y="370" as="sourcePoint" />
+            <mxPoint x="1340" y="340" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1527" y="160" />
+              <mxPoint x="1440" y="160" />
+              <mxPoint x="1440" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-117" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Use&lt;/font&gt;" style="endArrow=none;endSize=12;dashed=1;html=1;rounded=0;strokeWidth=2;strokeColor=#8D67A2;endFill=0;startArrow=none;startFill=0;startSize=12;entryX=1.007;entryY=0.132;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" target="PeRiEi2MZdtG_Jacx_HJ-73" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="1440" y="320" as="sourcePoint" />
+            <mxPoint x="1350" y="350" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1440" y="340" />
+              <mxPoint x="1440" y="832" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-118" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Use&lt;/font&gt;" style="endArrow=none;endSize=12;dashed=1;html=1;rounded=0;strokeWidth=2;strokeColor=#8D67A2;endFill=0;startArrow=none;startFill=0;startSize=12;" parent="1" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="1530" y="160" as="sourcePoint" />
+            <mxPoint x="1600" y="160" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1600" y="160" />
+              <mxPoint x="1610" y="160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PeRiEi2MZdtG_Jacx_HJ-119" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Use&lt;/font&gt;" style="endArrow=none;endSize=12;dashed=1;html=1;rounded=0;strokeWidth=2;strokeColor=#8D67A2;endFill=0;startArrow=none;startFill=0;startSize=12;entryX=-0.002;entryY=0.077;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" target="PeRiEi2MZdtG_Jacx_HJ-96" edge="1">
+          <mxGeometry x="-0.4844" width="160" relative="1" as="geometry">
+            <mxPoint x="1530" y="160" as="sourcePoint" />
+            <mxPoint x="1570" y="750" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1530" y="260" />
+              <mxPoint x="1550" y="260" />
+              <mxPoint x="1550" y="770" />
+              <mxPoint x="1570" y="770" />
+            </Array>
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

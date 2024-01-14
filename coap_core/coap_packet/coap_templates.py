@@ -96,16 +96,6 @@ class CoapTemplates(Enum):
         payload="",
     )
 
-    SUCCESS_CREATED = CoapPacket(
-        version=1,
-        message_type=CoapType.NON.value,
-        token=b"",
-        code=CoapCodeFormat.SUCCESS_CREATED.value(),
-        message_id=0,
-        options={},
-        payload="",
-    )
-
     SUCCESS_CHANGED = CoapPacket(
         version=1,
         message_type=CoapType.NON.value,

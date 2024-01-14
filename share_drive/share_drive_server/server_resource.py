@@ -10,6 +10,7 @@ from coap_core.coap_packet.coap_templates import CoapTemplates
 from coap_core.coap_resource.resource import Resource
 from coap_core.coap_utilities.coap_logger import logger, LogColor
 
+
 class ServerResource(Resource):
     """
     Represents a CoAP server resource for handling various operations on a shared drive.
@@ -117,7 +118,8 @@ class ServerResource(Resource):
                     request.options.get(CoapOptionDelta.BLOCK1.value)):
                 os.chdir(self.get_path())
                 DriveAssembler().set_save_path(request.payload["upload_path"], False)
-                relative_path = request.payload["upload_path"] + request.options[CoapOptionDelta.LOCATION_PATH.value].split('/')[-1]
+                relative_path = request.payload["upload_path"] + \
+                                request.options[CoapOptionDelta.LOCATION_PATH.value].split('/')[-1]
                 if DriveUtilities.file_exists(relative_path) or DriveUtilities.folder_exists(relative_path):
                     invalid_request = CoapTemplates.CONFLICT.value_with(request.token, request.message_id)
                     request.skt.sendto(invalid_request.encode(), request.sender_ip_port)

@@ -73,19 +73,6 @@ class CoapTransactionPool(CoapSingletonBase):
         if key not in self.__finished_transactions:
             self.__transaction_dict[key] = transaction
 
-    def is_transaction_finished(self, packet: CoapPacket):
-        """
-        Checks if a specific CoAP transaction is finished.
-
-        Args:
-            packet (CoapPacket): The CoAP packet associated with the transaction.
-
-        Returns:
-            bool: True if the transaction is finished; False otherwise.
-        """
-        key = packet.work_id()
-        return key in self.__finished_transactions
-
     def solve_transactions(self):
         """
         Processes and solves pending CoAP transactions.
@@ -130,6 +117,19 @@ class CoapTransactionPool(CoapSingletonBase):
         # There is no need to delete the transaction if it has already finished.
         if key in self.__transaction_dict:
             del self.__transaction_dict[key]
+
+    def is_transaction_finished(self, packet: CoapPacket):
+        """
+        Checks if a specific CoAP transaction is finished.
+
+        Args:
+            packet (CoapPacket): The CoAP packet associated with the transaction.
+
+        Returns:
+            bool: True if the transaction is finished; False otherwise.
+        """
+        key = packet.work_id()
+        return key in self.__finished_transactions
 
     def finish_overall_transaction(self, packet: CoapPacket):
         """

@@ -1,25 +1,18 @@
-# 1. Sequence diagram + Packet format
+# 1. Component diagram
+### Description ...
+![image](arhitecture/photos/component_diagram.png)
 
-![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/f8f02abe-3f49-40bb-9ce2-04ad12cd9f60)
+# 2. Sequence Diagram
+### Description ...
+![image](arhitecture/photos/sequence_diagram.png)
 
-# 2. Class Diagram
+# 3. Class Diagram
+### Description ...
+![image](arhitecture/photos/class_diagram.png)
 
-![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/3deef87f-eaa9-4102-b07d-13d494e6d335)
-
-# 3. Tests
-### Test with a window of 10000 packets for a 400MB+ file
-![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/ae72906f-c1c5-41aa-99fd-4052c310f264)
-
-### Test with a window of 1000 packets for a 400MB+ file
-![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/c5c11f29-fdd9-4f61-83d7-d7abfd64c9cc)
-
-### Test with a window of 100 packets for a 400MB+ file
-![image](https://github.com/TUIASI-AC-IoT/proiectrcp2023-echipa-21-2023/assets/101417927/a518b73d-c1be-49f1-b0d0-f0c24a83b73c)
-
-# 4. CoAP Message Format
-
-### Client IP
-- Field wrapped when the packet is recieved.
+# 4. CoAP Packet Format
+### Description ... to be updated
+![image](arhitecture/photos/packet_format.png)
 
 ### Packet Types
 - **Confirmable (CON - 00)**: Used for request messages expecting acknowledgments.
