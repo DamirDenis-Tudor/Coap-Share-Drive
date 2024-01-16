@@ -169,7 +169,9 @@ class CoapWorkerPool(ABC):
                                 self._shared_work[packet.work_id()] = time.time()
 
                     case CoapType.NON.value:
-                        CoapTransactionPool().finish_overall_transaction(packet)
+                        if packet.work_id() not in self._shared_work:
+                            self.__choose_worker().submit_task(packet)
+                            self._shared_work[packet.work_id()] = time.time()
 
                     case CoapType.ACK.value:
                         CoapTransactionPool().finish_transaction(packet)

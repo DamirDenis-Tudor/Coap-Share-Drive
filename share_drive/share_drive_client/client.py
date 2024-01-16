@@ -158,7 +158,6 @@ class Client(CoapWorkerPool):
             coap_message.payload = {'rename': new_name}
             self._handle_internal_task(coap_message)
 
-            CoapTransactionPool().wait_util_finish(coap_message)
         else:
             logger.log("> There is nothing to be renamed.", LogColor.YELLOW)
 
@@ -189,7 +188,6 @@ class Client(CoapWorkerPool):
             coap_message.payload = {'move': new_location}
             self._handle_internal_task(coap_message)
 
-            CoapTransactionPool().wait_util_finish(coap_message)
         else:
             logger.log("> There is nothing to be moved.", LogColor.YELLOW)
 
@@ -211,7 +209,6 @@ class Client(CoapWorkerPool):
             coap_message.sender_ip_port = (self.__server_ip, int(self.__server_port))
             self._handle_internal_task(coap_message)
 
-            CoapTransactionPool().wait_util_finish(coap_message)
         else:
             logger.log("> There is nothing to be deleted.", LogColor.YELLOW)
 
