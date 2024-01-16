@@ -11,7 +11,8 @@
       2) [Slower flow](#standard-like-flow)
       3) [Faster flow](#faster-flow-methodpersonal-advice)
 3) [POC arhitecture implementation](#3-poc-arhitecture-implementation)
-3) [Sources](#4-sources)
+4) [Installation](#4-installation-)
+5) [Sources](#5-sources)
 
 # 1. Architecture Design
 
@@ -194,8 +195,8 @@ Client: 2.31 Continue
 ## III. WireShark Capture
 [Download capture.pcapng](arhitecture/demo/capture.pcapng)
 
-# 5. Installation (Linux only)
-
+# 4. Installation 
+**Linux only & python >= 3.11**
 ```bash
 git clone https://github.com/DamirDenis-Tudor/Coap-Share-Drive.git
 cd Coap-Share-Drive
@@ -214,8 +215,7 @@ share-drive-server --server_address 127.0.0.1 --server_port 5683
 ```bash
 share-drive-client --server_address 127.0.0.1 --server_port 5683 --client_address 127.0.0.2 --client_port 5683
 ```
-
-# 4. Sources:
+# 5. Sources:
 - https://datatracker.ietf.org/doc/html/rfc7252
 - https://datatracker.ietf.org/doc/html/rfc7959
 - https://docs.python.org/3.11/
