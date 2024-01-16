@@ -197,23 +197,21 @@ Client: 2.31 Continue
 # 5. Installation (Linux only)
 
 ```bash
-# Clone the repository
 git clone https://github.com/DamirDenis-Tudor/Coap-Share-Drive.git
-
-# Navigate to the project directory
 cd Coap-Share-Drive
+```
 
-# Create a virtual environment and activate it
+```bash
 python3 -m venv venv
 source venv/bin/activate
-
-# Install the project dependencies
 pip install .
+```
 
-# Run the share-drive-server
+```bash
 share-drive-server --server-address <SERVER_ADDRESS> --server-port <SERVER_PORT>
+```
 
-# Run the share-drive-client
+```bash
 share-drive-client --server-address <SERVER_ADDRESS> --server-port <SERVER_PORT> --client-address <CLIENT_ADDRESS> --client-port <CLIENT_PORT>
 ```
 
@@ -223,3 +221,4 @@ share-drive-client --server-address <SERVER_ADDRESS> --server-port <SERVER_PORT>
 - https://docs.python.org/3.11/
 - https://realpython.com/python-parallel-processing/
 - https://chat.openai.com/
+- https://www.uml.org/
