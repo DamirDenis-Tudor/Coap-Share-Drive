@@ -194,6 +194,29 @@ Client: 2.31 Continue
 ## III. WireShark Capture
 [Download capture.pcapng](arhitecture/demo/capture.pcapng)
 
+# 5. Installation (Linux only)
+
+```bash
+# Clone the repository
+git clone https://github.com/DamirDenis-Tudor/Coap-Share-Drive.git
+
+# Navigate to the project directory
+cd Coap-Share-Drive
+
+# Create a virtual environment and activate it
+python3 -m venv venv
+source venv/bin/activate
+
+# Install the project dependencies
+pip install .
+
+# Run the share-drive-server
+share-drive-server --server-address <SERVER_ADDRESS> --server-port <SERVER_PORT>
+
+# Run the share-drive-client
+share-drive-client --server-address <SERVER_ADDRESS> --server-port <SERVER_PORT> --client-address <CLIENT_ADDRESS> --client-port <CLIENT_PORT>
+```
+
 # 4. Sources:
 - https://datatracker.ietf.org/doc/html/rfc7252
 - https://datatracker.ietf.org/doc/html/rfc7959
