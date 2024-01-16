@@ -208,11 +208,11 @@ pip install .
 ```
 
 ```bash
-share-drive-server --server-address <SERVER_ADDRESS> --server-port <SERVER_PORT>
+share-drive-server --server_address 127.0.0.1 --server_port 5683 
 ```
 
 ```bash
-share-drive-client --server-address <SERVER_ADDRESS> --server-port <SERVER_PORT> --client-address <CLIENT_ADDRESS> --client-port <CLIENT_PORT>
+share-drive-client --server_address 127.0.0.1 --server_port 5683 --client_address 127.0.0.2 --client_port 5683
 ```
 
 # 4. Sources:
