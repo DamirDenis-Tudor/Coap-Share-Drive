@@ -11,7 +11,7 @@
       2) [Slower flow](#standard-like-flow)
       3) [Faster flow](#faster-flow-methodpersonal-advice)
 3) [POC arhitecture implementation](#3-poc-arhitecture-implementation)
-   1) [Demo video](#key-concepts)
+3) [Sources](#4-sources)
 
 # 1. Architecture Design
 
@@ -184,3 +184,19 @@ Client: 2.31 Continue
 
 # 3. POC arhitecture implementation
 
+## I. Implementation notes
+- This implementation adheres to the described architecture. It serves as a proof of concept, but for a serious implementation, it's recommended to use CPython, C++, or another high-speed language.
+- This is an example of a command-based share drive application implemented in Python. However, the language choice introduces poor packet managing speed. A significant challenge with using Python is the Global Interpreter Lock (GIL), which can hinder concurrent execution of CPU-bound tasks.
+
+## II. Demo video
+[demo.webm](https://github.com/DamirDenis-Tudor/Cyberpunk-Platformer/assets/101417927/19c17b6b-2465-4562-a920-f6287d4eed4a)
+
+## III. WireShark Capture
+[Download capture.pcapng](arhitecture/demo/capture.pcapng)
+
+# 4. Sources:
+- https://datatracker.ietf.org/doc/html/rfc7252
+- https://datatracker.ietf.org/doc/html/rfc7959
+- https://docs.python.org/3.11/
+- https://realpython.com/python-parallel-processing/
+- https://chat.openai.com/
