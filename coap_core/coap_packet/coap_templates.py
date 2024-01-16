@@ -88,7 +88,7 @@ class CoapTemplates(Enum):
 
     SUCCESS_DELETED = CoapPacket(
         version=1,
-        message_type=CoapType.NON.value,
+        message_type=CoapType.ACK.value,
         token=b"",
         code=CoapCodeFormat.SUCCESS_DELETED.value(),
         message_id=0,
@@ -98,7 +98,7 @@ class CoapTemplates(Enum):
 
     SUCCESS_CHANGED = CoapPacket(
         version=1,
-        message_type=CoapType.NON.value,
+        message_type=CoapType.ACK.value,
         token=b"",
         code=CoapCodeFormat.SUCCESS_CHANGED.value(),
         message_id=0,
