@@ -38,9 +38,6 @@ class Server:
         # Dictionary to store data queues and client processes for each address
         self._processes_queues = {}
 
-        # Queue for receiving incoming CoAP messages
-        self._recv_queue = queue.Queue()
-
         # Enabling debug mode for the CoAP logger
         logger.debug_mode = True
         # Clearing the terminal and printing the CoAP Drive Server title
@@ -70,8 +67,6 @@ class Server:
                 if active_socket:
                     # Receiving data and address from the socket
                     data, address = self._skt.recvfrom(1152)
-                    # Putting the received data and address into the queue
-                    self._recv_queue.put((data, address))
 
                     # Checking if there is an existing process for the client address
                     if address not in self._processes_queues:
